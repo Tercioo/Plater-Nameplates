@@ -3001,6 +3001,22 @@ local getAuraColorSlots = function()
 	return colorSlots
 end
 
+--shows the per aura healthbar colors of the used slots, hidden while the health bar shows a bad threat state color and those take priority
+function platerInternal.Auras.UpdateAuraColorThreat(unitFrame)
+	local container = unitFrame.AuraColorFrame
+	--the container is created with the first color of a plate
+	if (not container) then
+		return
+	end
+
+	local isBadThreatShown = Plater.db.profile.aura_colors_no_override_bad_threat and unitFrame.healthBar.isBadThreatColor
+	for index, tint in ipairs(container.tints) do
+		local isShown = tint.isSlotUsed and not isBadThreatShown
+		tint:SetShown(isShown)
+		container.pandemicTints[index]:SetShown(isShown)
+	end
+end
+
 --creates and updates the hidden aura container which colors the health bar while a configured aura is active. 'unit' is nil when the nameplate is removed
 local updateAuraColorContainer = function(unitFrame, unit)
 	local colorSlots = getAuraColorSlots()
@@ -3143,10 +3159,10 @@ local updateAuraColorContainer = function(unitFrame, unit)
 
 	--a slot keeps its last state while the container is disabled, so the colors are hidden by hand
 	for index, tint in ipairs(container.tints) do
-		local isSlotUsed = isActive and colorSlots[slotCount - index + 1] ~= nil or false
-		tint:SetShown(isSlotUsed)
-		container.pandemicTints[index]:SetShown(isSlotUsed)
+		tint.isSlotUsed = isActive and colorSlots[slotCount - index + 1] ~= nil or false
 	end
+
+	platerInternal.Auras.UpdateAuraColorThreat(unitFrame)
 end
 
 function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFilters, forceLayout)

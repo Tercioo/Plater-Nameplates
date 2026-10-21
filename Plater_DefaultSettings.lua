@@ -148,6 +148,7 @@ PLATER_DEFAULT_SETTINGS = {
 		--store the cast colors customized by the user
 		cast_colors = {}, --[spellId] = {[1] = color, [2] = enabled, [3] = custom spell name}
 		aura_colors = {}, --[spellId or spell name] = {[1] = enabled, [2] = color, [3] = track by name, [4] = only mine, [5] = priority, [6] = pandemic color or false}
+		aura_colors_no_override_bad_threat = true, --bad threat colors take priority over the per aura healthbar colors
 		cast_color_settings = { --these are settings for the original cast color settings
 			enabled = false,
 			width = 6,

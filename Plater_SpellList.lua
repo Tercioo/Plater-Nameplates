@@ -1129,6 +1129,25 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
         local addAuraButton = detailsFramework:CreateButton(auraLastEventFrame, addAuraColor, 70, 20, "Add Aura", -1, nil, nil, nil, nil, nil, options_button_template, detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
         addAuraButton:SetPoint("right", auraSearchLabel, "left", -10, 0)
         addAuraButton.tooltip = "Adds the spell name or spell ID typed in the search box to the list, then pick a health bar color for it."
+
+        --bad threat colors take priority over the aura colors, the change applies to the shown nameplates at once
+        local onToggleNoOverrideThreat = function(_, _, value)
+            Plater.db.profile.aura_colors_no_override_bad_threat = value
+            for _, plateFrame in ipairs(Plater.GetAllShownPlates()) do
+                platerInternal.Auras.UpdateAuraColorThreat(plateFrame.unitFrame)
+            end
+        end
+
+        local noOverrideThreatSwitch = detailsFramework:CreateSwitch(auraLastEventFrame, onToggleNoOverrideThreat, Plater.db.profile.aura_colors_no_override_bad_threat, _, _, _, _, _, "$parentNoOverrideThreatToggle", _, _, _, nil, options_switch_template)
+        noOverrideThreatSwitch:SetAsCheckBox()
+        noOverrideThreatSwitch:SetSize(20, 20)
+        noOverrideThreatSwitch:SetPoint("right", addAuraButton, "left", -10, 0)
+        noOverrideThreatSwitch.tooltip = "Bad threat states (losing or missing aggro) will have priority over aura colors."
+
+        --two lines, the row is shared with the description
+        local noOverrideThreatLabel = detailsFramework:CreateLabel(auraLastEventFrame, "Don't override bad\nThreat colors", options_text_template)
+        noOverrideThreatLabel.align = "right"
+        noOverrideThreatLabel:SetPoint("right", noOverrideThreatSwitch, "left", -2, 0)
     end
 
     --create the description

@@ -6619,8 +6619,16 @@ end
 	end
 	
 	--internal function to change the health bar color
-	function Plater.ChangeHealthBarColor_Internal (healthBar, r, g, b, a, forceNoLerp, force) --private
+	--isBadThreatColor is true when the color comes from the threat coloring in a bad threat state, any other color clears it
+	function Plater.ChangeHealthBarColor_Internal (healthBar, r, g, b, a, forceNoLerp, force, isBadThreatColor) --private
 		a = a or 1
+		isBadThreatColor = isBadThreatColor or false
+		if (healthBar.isBadThreatColor ~= isBadThreatColor) then
+			healthBar.isBadThreatColor = isBadThreatColor
+			--the per aura healthbar colors can give way to bad threat colors
+			platerInternal.Auras.UpdateAuraColorThreat(healthBar.unitFrame)
+		end
+		
 		if force or (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B or a ~= healthBar.A) then
 			healthBar.R, healthBar.G, healthBar.B, healthBar.A = r, g, b, a
 			if (not DB_LERP_COLOR or forceNoLerp) then -- ~lerpcolor
@@ -7665,17 +7673,17 @@ end
 		if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
 			if (not self.DenyColorChange) then --tagged from a script
 				if not self.hasUnitTypeColor then
-					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
+					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a, nil, nil, not self.isGoodAggroState)
 
 				elseif self.InCombat and not self.isGoodAggroState or (Plater.db.profile.unit_type_coloring_no_override_threat and self.isGoodAggroState) then
-					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
+					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a, nil, nil, not self.isGoodAggroState)
 
 				elseif Plater.db.profile.unit_type_coloring_enabled and (self.isGoodAggroState or not self.InCombat) and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
 					-- reset
 					Plater.FindAndSetNameplateColor (self)
 
 				else
-					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a) -- fallback, just in case
+					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a, nil, nil, not self.isGoodAggroState) -- fallback, just in case
 				end
 			end
 		--elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then

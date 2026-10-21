@@ -133,6 +133,7 @@
 ---@field G number?
 ---@field B number?
 ---@field IsAnimating boolean
+---@field isBadThreatColor boolean? true while the health bar shows a bad threat state color from the threat coloring
 ---@field actorLevel fontstring
 ---@field lifePercent fontstring
 ---@field FrameOverlay texture
