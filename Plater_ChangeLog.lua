@@ -8,6 +8,16 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1793183085, "Backend Change", "Oct 20th, 2026", "Adding option for Aura Colors to not override threat.", "cont1nuity"},
+			{1793183085, "Bug Fix", "Oct 20th, 2026", "Fixing fonts on auras not applying correctly.", "cont1nuity"},
+			{1793183085, "New Feature", "Oct 19th, 2026", "Adding support for LibOrbitGlow and 'Orbit: Media' glow types.", "cont1nuity"},
+			{1793183085, "New Feature", "Oct 18th, 2026", "Adding last name support for WoW Forever.", "cont1nuity"},
+			{1793183085, "Backend Change", "Oct 16th, 2026", "Better handling and more options for aura coloring.", "cont1nuity"},
+			{1793183085, "Backend Change", "Oct 16th, 2026", "Some slight improvements to performance.", "cont1nuity"},
+			{1793183085, "Backend Change", "Oct 16th, 2026", "Adding CVar options for some clients.", "cont1nuity"},
+			{1793183085, "New Feature", "Oct 15th, 2026", "Adding more dispel glow types and colors.", "cont1nuity"},
+			{1793183085, "New Feature", "Oct 15th, 2026", "Add support for the CustomNames addon.", "cont1nuity"},
+			
 			{1792002304, "Bug Fix", "Oct 15th, 2026", "Fixing error for classic versions.", "cont1nuity"},
 			{1792002304, "Bug Fix", "Oct 14th, 2026", "Fixing error with pixel API.", "cont1nuity"},
 			{1792002304, "Backend Change", "Oct 14th, 2026", "Bit of performance tuning on aura containers.", "cont1nuity"},
