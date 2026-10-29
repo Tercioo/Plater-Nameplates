@@ -4272,6 +4272,8 @@ Plater.AnchorNamesByPhraseId = {
 			--widget container update
 			if IS_WOW_PROJECT_MAINLINE then
 				plateFrame.unitFrame.WidgetContainer = plateFrame.UnitFrame.WidgetContainer
+				--ensure right owner, not nil...
+				plateFrame.unitFrame.WidgetContainerOwner = plateFrame.UnitFrame
 				if plateFrame.unitFrame.WidgetContainer then
 					plateFrame.unitFrame.WidgetContainer:ClearAllPoints()
 					plateFrame.unitFrame.WidgetContainer:SetParent(plateFrame)
@@ -4461,7 +4463,8 @@ Plater.AnchorNamesByPhraseId = {
 				-- remove widgets
 				if IS_WOW_PROJECT_MAINLINE and plateFrame.unitFrame.WidgetContainer then
 					plateFrame.unitFrame.WidgetContainer:SetIgnoreParentScale(false)
-					plateFrame.unitFrame.WidgetContainer:SetParent(plateFrame.UnitFrame)
+					plateFrame.unitFrame.WidgetContainer:SetScale(1)
+					plateFrame.unitFrame.WidgetContainer:SetParent(plateFrame.unitFrame.WidgetContainerOwner)
 					plateFrame.unitFrame.WidgetContainer:ClearAllPoints()
 					plateFrame.unitFrame.WidgetContainer:SetPoint('TOP', plateFrame.castBar, 'BOTTOM')
 				end
