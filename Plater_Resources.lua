@@ -435,8 +435,8 @@ end
 
 	resourceBarCreateFuncByEnumName[CONST_ENUMNAME_RUNES] = function(mainResourceFrame)
 		local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_DK_FROST)
-		mainResourceFrame.widgetWidth = IS_WOW_PROJECT_MIDNIGHT_API and 16 or 18--24
-		mainResourceFrame.widgetHeight = IS_WOW_PROJECT_MIDNIGHT_API and 16 or 18--24
+		mainResourceFrame.widgetWidth = IS_WOW_PROJECT_MAINLINE and 16 or 18--24
+		mainResourceFrame.widgetHeight = IS_WOW_PROJECT_MAINLINE and 16 or 18--24
 		local newResourceBar = createResourceBar(mainResourceFrame, "$parentDeathKnightResource", resourceWidgetCreationFunc, mainResourceFrame.widgetWidth, mainResourceFrame.widgetHeight)
 		mainResourceFrame.resourceBars[CONST_SPECID_DK_UNHOLY] = newResourceBar
 		mainResourceFrame.resourceBars[CONST_SPECID_DK_FROST] = newResourceBar
@@ -449,7 +449,7 @@ end
 			tinsert(newResourceBar.runeIndexes, i); 
 		end
 		
-		if IS_WOW_PROJECT_MIDNIGHT_API then
+		if IS_WOW_PROJECT_MAINLINE then
 			newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnRunesChanged
 		else
 			newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnRunesChangedWotLK
@@ -552,7 +552,8 @@ end
 			if (playerClass == "ROGUE" or playerClass == "DRUID") then
 				local classResourceFunc = resourceBarCreateFuncByEnumName[CONST_ENUMNAME_COMBOPOINT]
 				if (classResourceFunc) then
-					local resourceBar = classResourceFunc(mainResourceFrame)
+					--reuse the bar built by an earlier call, a new one would stack over the old one
+					local resourceBar = mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_COMBOPOINT] or classResourceFunc(mainResourceFrame)
 					mainResourceFrame.currentResourceBarShown = resourceBar
 					Plater.Resources.UpdateResourceBar(nil, resourceBar)
 					return resourceBar
@@ -560,7 +561,8 @@ end
 			elseif (playerClass == "DEATHKNIGHT") then
 				local classResourceFunc = resourceBarCreateFuncByEnumName[CONST_ENUMNAME_RUNES]
 				if (classResourceFunc) then
-					local resourceBar = classResourceFunc(mainResourceFrame)
+					--reuse the bar built by an earlier call, a new one would stack over the old one
+					local resourceBar = mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_RUNES] or classResourceFunc(mainResourceFrame)
 					mainResourceFrame.currentResourceBarShown = resourceBar
 					Plater.Resources.UpdateResourceBar(nil, resourceBar)
 					return resourceBar

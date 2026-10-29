@@ -589,8 +589,9 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		--rune cd
 		local cooldown = CreateFrame("Cooldown", "$parentCooldown", widgetFrame, "CooldownFrameTemplate")
         cooldown:ClearAllPoints()
-		cooldown:SetPoint("center", widgetFrame, "center", 0, -1)
-		cooldown:SetSize(14, 14)
+		cooldown:SetPoint("center", widgetFrame, "center", 0, 0)
+		--blizzard's rune button uses a 15 swipe inside a 24 ring, scaled to the 18 ring here
+		cooldown:SetSize(11.25, 11.25)
 		cooldown:SetReverse(false)
 		cooldown:SetDrawBling(false)
 		cooldown:SetHideCountdownNumbers(true)
@@ -600,7 +601,11 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		widgetFrame.cooldown = cooldown
 
 		--> create background
-		local backgroundTexture = widgetFrame:CreateTexture("$parenttopCircleTexture", "BACKGROUND")
+		--the ring sits on a frame above the cooldown, the swipe would cover it otherwise
+		local borderFrame = CreateFrame("frame", "$parentBorder", widgetFrame)
+		borderFrame:SetAllPoints()
+		borderFrame:SetFrameLevel(cooldown:GetFrameLevel() + 1)
+		local backgroundTexture = borderFrame:CreateTexture("$parenttopCircleTexture", "BACKGROUND")
 		backgroundTexture:SetTexture("Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Ring")
 		backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
 		backgroundTexture:SetSize(18, 18)
