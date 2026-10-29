@@ -7738,6 +7738,36 @@ end
 
 		{type = "blank"},
 		{type = "label", get = function() return "Aura Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.show_debuffs end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.show_debuffs = value
+				platerInternal.Auras.RefreshActorTypeAuras("friendlyplayer")
+			end,
+			name = "Show Debuffs",
+			desc = "Show debuffs on these nameplates.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.show_buffs end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.show_buffs = value
+				platerInternal.Auras.RefreshActorTypeAuras("friendlyplayer")
+			end,
+			name = "Show Buffs",
+			desc = "Show buffs on these nameplates.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.show_buff_special end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.show_buff_special = value
+				platerInternal.Auras.RefreshActorTypeAuras("friendlyplayer")
+			end,
+			name = "Show Buff Special",
+			desc = "Show the auras of the buff special frame on these nameplates.",
+		},
 		--y offset
 		{
 			type = "range",
@@ -7784,82 +7814,6 @@ end
 			usedecimals = true,
 			name = "OPTIONS_YOFFSET",
 			desc = "OPTIONS_YOFFSET_DESC",
-		},
-		
-		{type = "blank"},
-		{type = "label", get = function() return "Player Name Text Colors" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		--player name color
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_class_color end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_class_color = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Class Colors",
-			desc = "Player name/guild text uses the class color instead of the selected color. Guild or Friend colors will overwrite this, if used.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Friends Colors",
-			desc = "Player name/guild text uses the selected friend color, if the player is on your friend list.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Guild Colors",
-			desc = "Player name/guild text uses the selected guild color, if it is a guild mate.",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config.friendlyplayer.actorname_text_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config.friendlyplayer.actorname_text_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = "OPTIONS_COLOR",
-			desc = "The color of the text, if neither class, friend or guild colors are used.",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = "Friend Color",
-			desc = "Use this color for name/guild texts if the player is your friend.",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = "Guild Color",
-			desc = "Use this color for name/guild texts if the player is in your guild.",
 		},
 		
 		{type = "breakline"},
@@ -8636,6 +8590,81 @@ end
 			name = "OPTIONS_YOFFSET",
 			desc = "OPTIONS_YOFFSET_DESC",
 		},
+		{type = "blank"},
+		{type = "label", get = function() return "Player Name Text Colors" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--player name color
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_class_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_class_color = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Class Colors",
+			desc = "Player name/guild text uses the class color instead of the selected color. Guild or Friend colors will overwrite this, if used.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Friends Colors",
+			desc = "Player name/guild text uses the selected friend color, if the player is on your friend list.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Guild Colors",
+			desc = "Player name/guild text uses the selected guild color, if it is a guild mate.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config.friendlyplayer.actorname_text_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config.friendlyplayer.actorname_text_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "OPTIONS_COLOR",
+			desc = "The color of the text, if neither class, friend or guild colors are used.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Friend Color",
+			desc = "Use this color for name/guild texts if the player is your friend.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Guild Color",
+			desc = "Use this color for name/guild texts if the player is in your guild.",
+		},
 		
 		
 
@@ -8747,6 +8776,36 @@ end
 		{type = "blank"},
 		
 		{type = "label", get = function() return "Aura Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.show_debuffs end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.show_debuffs = value
+				platerInternal.Auras.RefreshActorTypeAuras("enemyplayer")
+			end,
+			name = "Show Debuffs",
+			desc = "Show debuffs on these nameplates.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.show_buffs end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.show_buffs = value
+				platerInternal.Auras.RefreshActorTypeAuras("enemyplayer")
+			end,
+			name = "Show Buffs",
+			desc = "Show buffs on these nameplates.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.show_buff_special end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.show_buff_special = value
+				platerInternal.Auras.RefreshActorTypeAuras("enemyplayer")
+			end,
+			name = "Show Buff Special",
+			desc = "Show the auras of the buff special frame on these nameplates.",
+		},
 		--y offset
 		{
 			type = "range",
@@ -9720,6 +9779,36 @@ end
 		{type = "blank"},
 		
 		{type = "label", get = function() return "Aura Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.show_debuffs end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.show_debuffs = value
+				platerInternal.Auras.RefreshActorTypeAuras("friendlynpc")
+			end,
+			name = "Show Debuffs",
+			desc = "Show debuffs on these nameplates.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.show_buffs end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.show_buffs = value
+				platerInternal.Auras.RefreshActorTypeAuras("friendlynpc")
+			end,
+			name = "Show Buffs",
+			desc = "Show buffs on these nameplates.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.show_buff_special end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.show_buff_special = value
+				platerInternal.Auras.RefreshActorTypeAuras("friendlynpc")
+			end,
+			name = "Show Buff Special",
+			desc = "Show the auras of the buff special frame on these nameplates.",
+		},
 		--y offset
 		{
 			type = "range",
@@ -10801,6 +10890,36 @@ end
 			
 			{type = "blank"},
 			{type = "label", get = function() return "Aura Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.plate_config.enemynpc.show_debuffs end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.show_debuffs = value
+					platerInternal.Auras.RefreshActorTypeAuras("enemynpc")
+				end,
+				name = "Show Debuffs",
+				desc = "Show debuffs on these nameplates.",
+			},
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.plate_config.enemynpc.show_buffs end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.show_buffs = value
+					platerInternal.Auras.RefreshActorTypeAuras("enemynpc")
+				end,
+				name = "Show Buffs",
+				desc = "Show buffs on these nameplates.",
+			},
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.plate_config.enemynpc.show_buff_special end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.show_buff_special = value
+					platerInternal.Auras.RefreshActorTypeAuras("enemynpc")
+				end,
+				name = "Show Buff Special",
+				desc = "Show the auras of the buff special frame on these nameplates.",
+			},
 			--y offset
 			{
 				type = "range",

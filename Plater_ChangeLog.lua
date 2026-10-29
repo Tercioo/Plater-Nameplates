@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1793183085, "New Feature", "Oct 29th, 2026", "Adding options to disable aura tracking per unit type.", "cont1nuity"},
+			
 			{1793183085, "Backend Change", "Oct 20th, 2026", "Adding option for Aura Colors to not override threat.", "cont1nuity"},
 			{1793183085, "Bug Fix", "Oct 20th, 2026", "Fixing fonts on auras not applying correctly.", "cont1nuity"},
 			{1793183085, "New Feature", "Oct 19th, 2026", "Adding support for LibOrbitGlow and 'Orbit: Media' glow types.", "cont1nuity"},

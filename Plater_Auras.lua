@@ -3199,9 +3199,21 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 
 		-- update
 		local auraActorType = unitFrame.ActorType == "friendlyplayer" and "friendlynpc" or unitFrame.ActorType -- shared friendly filters
+		--aura types disabled in the options tab of the actor type take the disable path
+		local plateConfig = unitFrame.ActorType ~= "player" and Plater.db.profile.plate_config[unitFrame.ActorType]
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
-			if DB_AURA_ENABLED and unit then
+			local isContainerShown = true
+			if (plateConfig and frameInfo.key == "ExtraIconFrame") then
+				isContainerShown = plateConfig.show_buff_special
+			elseif (plateConfig and frameInfo.key == "BuffFrame2") then
+				isContainerShown = plateConfig.show_buffs
+			elseif (plateConfig) then
+				--the main container holds the buffs too while they are not on the second buff frame
+				isContainerShown = plateConfig.show_debuffs or (not DB_AURA_SEPARATE_BUFFS and plateConfig.show_buffs)
+			end
+
+			if DB_AURA_ENABLED and unit and isContainerShown then
 				if forceFull then
 					forceLayout = true
 					forceFilters = true
@@ -3671,6 +3683,21 @@ end
 			Plater.Masque.BossModIconFrame:ReSkin()
 		end
 	end
+
+	--refreshes the aura containers of the plates of one actor type after its show_buffs / show_debuffs / show_buff_special changed
+	function platerInternal.Auras.RefreshActorTypeAuras(actorType) --private
+		for _, plateFrame in ipairs(Plater.GetAllShownPlates()) do
+			local unitFrame = plateFrame.unitFrame
+			if (unitFrame.ActorType == actorType and unitFrame.PlaterOnScreen and not unitFrame.isPerformanceUnitAura) then
+				if (IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS) then
+					Plater.CreateOrUpdateAuraContainers(unitFrame, unitFrame.unit)
+				else
+					UnitAuraEventHandlerData[unitFrame.unit] = {hasBuff = true, hasDebuff = true}
+					Plater.NameplateTick(plateFrame.OnTickFrame, 1)
+				end
+			end
+		end
+	end
 	
 	--stack auras with the same name and change the stack text above the icon to indicate how many auras with the same name the unit has
 	--self is BuffFrame
@@ -3875,6 +3902,13 @@ end
 			local amountFramesShown = #iconFrameContainer
 			
 			
+			--aura types hidden in the options tab of the actor type. the personal bar has its own toggles
+			--and the designer preview plate has no actor type
+			local actorType = self.unitFrame.ActorType
+			local plateConfig = actorType ~= "player" and profile.plate_config[actorType]
+			local isBuffHidden = plateConfig and not plateConfig.show_buffs
+			local isDebuffHidden = plateConfig and not plateConfig.show_debuffs
+
 			-- still sort by auraInstanceID for some consistency
 			local iconFrameContainerCopy = {}
 			local index = 0
@@ -3882,7 +3916,12 @@ end
 				if icon:IsShown() then
 					-- some more filtering doing here, as cannot be done earlier for midnight without larger rework...
 					local isPermanentToFilter = IS_WOW_PROJECT_MIDNIGHT and not icon.Cooldown:IsShown() and Plater.db.profile.debuff_hide_permanent or false
-					if not isPermanentToFilter then
+					local isTypeHidden = isDebuffHidden
+					if (icon.isBuff) then
+						isTypeHidden = isBuffHidden
+					end
+
+					if not isPermanentToFilter and not isTypeHidden then
 						index = index + 1
 						iconFrameContainerCopy[index] = icon
 					else
@@ -5001,6 +5040,14 @@ end
 	--~special ~auraspecial self is BuffFrame
 	function Plater.AddExtraIcon (self, spellName, icon, applications, debuffType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, isBuff, filter, id, modRate)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - AddExtraIcon")
+
+		--buff special hidden in the options tab of the actor type, the personal bar has no such toggle
+		local actorType = self.unitFrame.ActorType
+		local plateConfig = actorType ~= "player" and Plater.db.profile.plate_config[actorType]
+		if (plateConfig and not plateConfig.show_buff_special) then
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - AddExtraIcon")
+			return
+		end
 		
 		local sourceUnitName, sourceUnitClass
 		local borderColor

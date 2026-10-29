@@ -202,6 +202,9 @@ PLATER_DEFAULT_SETTINGS = {
 				mana = {100, 3},
 				mana_incombat = {100, 3},
 				buff_frame_y_offset = 10,
+				show_buffs = true,
+				show_debuffs = true,
+				show_buff_special = true,
 				castbar_offset_x = 0,
 				castbar_offset = 0,
 				
@@ -282,6 +285,9 @@ PLATER_DEFAULT_SETTINGS = {
 				mana_incombat = {100, 4},
 				
 				buff_frame_y_offset = 0,
+				show_buffs = true,
+				show_debuffs = true,
+				show_buff_special = true,
 				castbar_offset_x = 0,
 				castbar_offset = 0,
 				
@@ -371,6 +377,9 @@ PLATER_DEFAULT_SETTINGS = {
 				mana_incombat = {100, 4},
 				
 				buff_frame_y_offset = 0,
+				show_buffs = true,
+				show_debuffs = true,
+				show_buff_special = true,
 				castbar_offset_x = 0,
 				castbar_offset = 0,
 				
@@ -460,6 +469,9 @@ PLATER_DEFAULT_SETTINGS = {
 				mana_incombat = {100, 4},
 				
 				buff_frame_y_offset = 0,
+				show_buffs = true,
+				show_debuffs = true,
+				show_buff_special = true,
 				castbar_offset_x = 0,
 				castbar_offset = 0,
 				
