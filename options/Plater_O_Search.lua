@@ -88,7 +88,7 @@ function platerInternal.CreateSearchOptions()
 	local mainSearchBox = DF:CreateTextEntry(OTTFrame, function()end, 156, 20, "mainSearchTextEntry", _, _, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
 	mainSearchBox:SetAsSearchBox()
 	mainSearchBox:SetJustifyH("left")
-	mainSearchBox:SetPoint("topright", -220, 0)
+	mainSearchBox:SetPoint("topleft", PlaterOptionsPanelFrame, "topleft", 10, -110)
 
 	local optionsWildCardFrame = CreateFrame("frame", "$parentWildCardOptionsFrame", searchFrame, BackdropTemplateMixin and "BackdropTemplate")
 	optionsWildCardFrame:SetAllPoints()
