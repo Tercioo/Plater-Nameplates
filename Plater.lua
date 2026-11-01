@@ -3272,7 +3272,7 @@ Plater.AnchorNamesByPhraseId = {
 				--blizzard hid the plate without a NAME_PLATE_UNIT_REMOVED (e.g. mind control ending), unload it
 				onTickFrame:SetScript ("OnHide", function (self)
 					local plateFrame = self.PlateFrame
-					if (plateFrame.unitFrame.PlaterOnScreen and not plateFrame:IsShown()) then
+					if (plateFrame.unitFrame.PlaterOnScreen and not plateFrame:IsShown() and not plateFrame.isDesigner) then
 						Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", plateFrame.unitFrame [MEMBER_UNITID], plateFrame)
 					end
 				end)
