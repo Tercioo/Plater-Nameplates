@@ -94,6 +94,7 @@ Plater_NpcColorPanels.lua
 Plater_CastColorPanels.lua
 Plater_SpellList.lua
 Plater_Audio.lua
+Plater_Interrupts.lua
 Plater_Plugins.lua
 Plater_DebugFrames.lua
 Plater_API.lua

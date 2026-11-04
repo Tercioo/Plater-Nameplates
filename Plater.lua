@@ -1937,6 +1937,7 @@ Plater.AnchorNamesByPhraseId = {
 			end
 		end
 		
+		platerInternal.Interrupts.RefreshConfig()
 		Plater.IncreaseRefreshID()
 		Plater.FireRefreshDBCallback()
 	end
@@ -2269,6 +2270,15 @@ Plater.AnchorNamesByPhraseId = {
 			C_Timer.After (1, Plater.DispatchTalentUpdateHookEvent)
 		end,
 		
+		--registered by platerInternal.Interrupts.RefreshConfig while the interrupt cooldown is in use
+		SPELL_UPDATE_COOLDOWN = function()
+			platerInternal.Interrupts.OnCooldownUpdate()
+		end,
+		
+		SPELLS_CHANGED = function()
+			platerInternal.Interrupts.Refresh()
+		end,
+		
 		GROUP_ROSTER_UPDATE = function()
 			if (platerInternal.last_GROUP_ROSTER_UPDATE + 2) > GetTime() or platerInternal.has_GROUP_ROSTER_UPDATE_Scheduled then
 				if not platerInternal.has_GROUP_ROSTER_UPDATE_Scheduled then
@@ -2286,6 +2296,10 @@ Plater.AnchorNamesByPhraseId = {
 		end,
 		
 		UNIT_PET = function(_, unit)
+			if (unit == "player") then
+				platerInternal.Interrupts.Refresh()
+			end
+			
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				---@cast plateFrame plateframe
 				if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
@@ -2466,9 +2480,13 @@ Plater.AnchorNamesByPhraseId = {
 
 		PLAYER_FOCUS_CHANGED = function()
 			Plater.OnPlayerTargetChanged()
+			platerInternal.Interrupts.UpdateAllPlates()
 		end,
 		PLAYER_TARGET_CHANGED = function()
 			Plater.OnPlayerTargetChanged()
+			if (Plater.db.profile.interrupt_cd_icon_only_target) then
+				platerInternal.Interrupts.UpdateAllPlates()
+			end
 		end,
 
 		PLAYER_UPDATE_RESTING = function()
@@ -2965,6 +2983,9 @@ Plater.AnchorNamesByPhraseId = {
 				newUnitFrame.castBar:SetHook("OnShow", Plater.CastBarOnShow_Hook)
 				hooksecurefunc(newUnitFrame.castBar, "OnEvent", Plater.CastBarOnEvent_Hook)
 				hooksecurefunc(newUnitFrame.castBar, "OnTick", Plater.CastBarOnTick_Hook)
+				
+				--interrupt cooldown icon and cast bar spark
+				platerInternal.Interrupts.CreatePlateWidgets(newUnitFrame)
 				
 				newUnitFrame.HasHooksRegistered = true
 				
@@ -5436,6 +5457,7 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.DoCastBarTest(castNoInterrupt, castTime)
 
 			Plater.IsTestRunning = true
+			platerInternal.Interrupts.UpdateAllPlates()
 		end
 
 		function platerInternal.CastBar.StartTestCastBarForNameplate(plateFrame)
@@ -5594,6 +5616,7 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.IsTestRunning = nil
 			Plater.IsShowingCastBarTest = false
 			Plater.CastBarTestFrame:SetScript("OnUpdate", nil)
+			platerInternal.Interrupts.UpdateAllPlates()
 		end
 	
 		--> when the option to show the target of the cast is enabled, this function update the text settings but not the target name
@@ -6021,6 +6044,13 @@ function Plater.OnInit() --private --~oninit ~init
 						parserFunctions.SPELL_CAST_SUCCESS (nil, "SPELL_CAST_SUCCESS", nil, unitFrame[MEMBER_GUID], unitFrame.unitNameInternal, 0x00000040, nil, nil, nil, nil, nil, self.spellID, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 					end
 
+					--interrupt not ready / out of range tint, after the per spell color
+					platerInternal.Interrupts.UpdateCastBar(self)
+
+				elseif (event == "UNIT_SPELLCAST_INTERRUPTIBLE" or event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE") then
+					--the cast bar recolored itself
+					platerInternal.Interrupts.UpdateCastBar(self)
+
 				elseif (event == "UNIT_SPELLCAST_INTERRUPTED") then
 					local unitCast = unit
 					if (unitCast ~= self.unit) then
@@ -6156,6 +6186,9 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 					
 					self.ThrottleUpdate = self.unitFrame.PlateFrame.OnTickFrame.ThrottleUpdate + DB_TICK_THROTTLE
+
+					--range color and plate updates resetting the texture, before scripts so they can still recolor
+					platerInternal.Interrupts.UpdateCastBar(self)
 
 					if not issecretvalue(self.SpellName) then
 						--get the script object of the aura which will be showing in this icon frame
@@ -8181,7 +8214,7 @@ end
 		Plater.PlayerCurrentFocusTargetGUID = UnitGUID ("focus")
 		--Plater.PlayerHasFocusTarget = Plater.PlayerCurrentFocusTargetGUID and true
 		Plater.PlayerHasFocusTarget = type(Plater.PlayerCurrentFocusTargetGUID) ~= "nil"
-		local selfFocus = UnitIsUnit("player", "target")
+		local selfFocus = UnitIsUnit("player", "focus")
 		if issecretvalue(selfFocus) then selfFocus = false end --MIDNIGHT!!
 		Plater.PlayerHasFocusTargetNonSelf = Plater.PlayerHasFocusTarget and not selfFocus and true
 		
@@ -9377,6 +9410,7 @@ end
 		end
 		
 		castBar:SetStatusBarTexture (DB_TEXTURE_CASTBAR)
+		platerInternal.Interrupts.UpdatePlate (unitFrame)
 		
 		--update all texts in the nameplate
 		Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [actorType], shouldForceRefresh or plateFrame.PreviousUnitType ~= actorType or unitFrame.RefreshID < PLATER_REFRESH_ID)

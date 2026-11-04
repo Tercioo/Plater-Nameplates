@@ -189,6 +189,101 @@ function platerInternal.CreateCastBarOptions()
         {value = "same as castbar plus healthbar", label = "Castbar + Healthbar Size", onclick = onSelectCastBarSize},
     }
 
+    --interrupt cooldown entries: each writes one profile key and refreshes the interrupt cooldown (Plater_Interrupts.lua)
+    local interruptToggle = function(key, name, desc, hidden)
+        return {
+            type = "toggle",
+            get = function() return Plater.db.profile[key] end,
+            set = function(self, fixedparam, value)
+                Plater.db.profile[key] = value
+                platerInternal.Interrupts.RefreshConfig()
+            end,
+            name = name,
+            desc = desc,
+            hidden = hidden,
+        }
+    end
+
+    local interruptRange = function(key, name, desc, min, max, step, usedecimals, hidden)
+        return {
+            type = "range",
+            get = function() return Plater.db.profile[key] end,
+            set = function(self, fixedparam, value)
+                Plater.db.profile[key] = value
+                platerInternal.Interrupts.RefreshConfig()
+            end,
+            min = min,
+            max = max,
+            step = step,
+            usedecimals = usedecimals,
+            name = name,
+            desc = desc,
+            hidden = hidden,
+        }
+    end
+
+    local interruptColor = function(key, name, desc, hidden)
+        return {
+            type = "color",
+            get = function()
+                local color = Plater.db.profile[key]
+                return {color[1], color[2], color[3], color[4]}
+            end,
+            set = function(self, r, g, b, a)
+                local color = Plater.db.profile[key]
+                color[1], color[2], color[3], color[4] = r, g, b, a
+                platerInternal.Interrupts.RefreshConfig()
+            end,
+            name = name,
+            desc = desc,
+            hidden = hidden,
+        }
+    end
+
+    local interruptAnchorOptions = {}
+    for i = 1, 13 do
+        local phraseId = Plater.AnchorNamesByPhraseId[i]
+        interruptAnchorOptions[#interruptAnchorOptions + 1] = {
+            label = DF.Language.GetText(addonId, phraseId),
+            languageId = DF.Language.GetLanguageIdForAddonId(addonId),
+            phraseId = phraseId,
+            value = i,
+            statusbar = dropdownStatusBarTexture,
+            statusbarcolor = dropdownStatusBarColor,
+            onclick = function(_, _, value)
+                Plater.db.profile.interrupt_cd_icon_anchor.side = value
+                platerInternal.Interrupts.RefreshConfig()
+            end,
+        }
+    end
+
+    --"None" (empty name) turns the sound off
+    local onSelectInterruptSound = function(_, _, value)
+        Plater.db.profile.interrupt_cd_sound = value
+        platerInternal.Interrupts.RefreshConfig()
+        if (value ~= "") then
+            PlaySoundFile(LibSharedMedia:Fetch("sound", value), "Master")
+        end
+    end
+    local interruptSoundOptions = {}
+    for soundName in pairs(LibSharedMedia:HashTable("sound")) do
+        interruptSoundOptions[#interruptSoundOptions + 1] = {value = soundName, label = soundName, onclick = onSelectInterruptSound}
+    end
+    table.sort(interruptSoundOptions, function(t1, t2) return t1.label < t2.label end)
+    table.insert(interruptSoundOptions, 1, {value = "", label = "None", onclick = onSelectInterruptSound})
+
+    --"None" (empty name) keeps the cast bar texture
+    local onSelectInterruptTexture = function(_, _, value)
+        Plater.db.profile.cast_statusbar_interrupt_texture = value
+        platerInternal.Interrupts.RefreshConfig()
+    end
+    local interruptTextureOptions = {}
+    for textureName, texturePath in pairs(textures) do
+        interruptTextureOptions[#interruptTextureOptions + 1] = {value = textureName, label = textureName, statusbar = texturePath, onclick = onSelectInterruptTexture}
+    end
+    table.sort(interruptTextureOptions, function(t1, t2) return t1.label < t2.label end)
+    table.insert(interruptTextureOptions, 1, {value = "", label = "None", onclick = onSelectInterruptTexture})
+
     local castBar_options = {
         {type = "breakline"},
 
@@ -561,6 +656,18 @@ function platerInternal.CreateCastBarOptions()
             desc = "OPTIONS_COLOR_BACKGROUND",
         },
 
+        interruptToggle("cast_statusbar_interrupt_not_ready_enabled", "Interrupt Not Ready", "Colors enemy cast bars while your interrupt is on cooldown."), --localize-me
+        interruptColor("cast_statusbar_color_interrupt_not_ready", "Not Ready Color", "Cast bar color while your interrupt is on cooldown."), --localize-me
+        interruptToggle("cast_statusbar_interrupt_range_enabled", "Out Of Interrupt Range", "Colors enemy cast bars while your interrupt is ready but the caster is out of its range."), --localize-me
+        interruptColor("cast_statusbar_color_interrupt_out_of_range", "Out Of Range Color", "Cast bar color while the caster is out of range of your interrupt."), --localize-me
+        {
+            type = "select",
+            get = function() return Plater.db.profile.cast_statusbar_interrupt_texture end,
+            values = function() return interruptTextureOptions end,
+            name = "OPTIONS_TEXTURE",
+            desc = "Cast bar texture while your interrupt is on cooldown or the caster is out of its range.", --localize-me
+        },
+
         {type = "breakline"},
         --toggle cast bar target
         {type = "label", get = function() return "Cast Bar Target Name:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -710,7 +817,7 @@ function platerInternal.CreateCastBarOptions()
             desc = "OPTIONS_YOFFSET",
         },
 
-        {type = "breakline"},
+        {type = "blank"},
         --toggle cast bar target
         {type = "label", get = function() return "OPTIONS_CASTBAR_SPELLICON" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
@@ -788,6 +895,68 @@ function platerInternal.CreateCastBarOptions()
             name = "OPTIONS_CASTBAR_HIDEBLIZZARD",
             desc = "OPTIONS_CASTBAR_HIDEBLIZZARD",
         },
+
+        {type = "breakline"},
+        {type = "label", get = function() return "Interrupt Cooldown" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")}, --localize-me
+        interruptToggle("interrupt_cd_icon_enabled", "Show Icon", "Shows the cooldown of your interrupt on enemy nameplates."), --localize-me
+        interruptToggle("interrupt_cd_icon_hide_when_ready", "Hide When Ready", "Only show the icon while the interrupt is on cooldown."), --localize-me
+        interruptToggle("interrupt_cd_icon_only_casters", "Only Mana Users", "Only show the icon on units using mana."), --localize-me
+        interruptToggle("interrupt_cd_icon_only_target", "Only On Target", "Only show the icon on your current target."), --localize-me
+        interruptToggle("interrupt_cd_icon_only_focus", "Only On Focus", "While you have a focus target, only show the icon on it."), --localize-me
+        interruptRange("interrupt_cd_icon_size", "OPTIONS_SIZE", "OPTIONS_SIZE", 8, 64, 1),
+        {
+            type = "select",
+            get = function() return Plater.db.profile.interrupt_cd_icon_anchor.side end,
+            values = function() return interruptAnchorOptions end,
+            name = "OPTIONS_ANCHOR",
+            desc = "OPTIONS_ANCHOR",
+        },
+        {
+            type = "range",
+            get = function() return Plater.db.profile.interrupt_cd_icon_anchor.x end,
+            set = function(self, fixedparam, value)
+                Plater.db.profile.interrupt_cd_icon_anchor.x = value
+                platerInternal.Interrupts.RefreshConfig()
+            end,
+            min = -100,
+            max = 100,
+            step = 1,
+            name = "OPTIONS_XOFFSET",
+            desc = "OPTIONS_XOFFSET",
+        },
+        {
+            type = "range",
+            get = function() return Plater.db.profile.interrupt_cd_icon_anchor.y end,
+            set = function(self, fixedparam, value)
+                Plater.db.profile.interrupt_cd_icon_anchor.y = value
+                platerInternal.Interrupts.RefreshConfig()
+            end,
+            min = -100,
+            max = 100,
+            step = 1,
+            name = "OPTIONS_YOFFSET",
+            desc = "OPTIONS_YOFFSET",
+        },
+        interruptColor("interrupt_cd_icon_swipe_color", "Swipe Color", "Color of the cooldown swipe."), --localize-me
+        interruptToggle("interrupt_cd_icon_show_text", "Show Countdown", "Shows the remaining time on the icon."), --localize-me
+        interruptRange("interrupt_cd_icon_text_size", "Text Size", "OPTIONS_TEXT_SIZE", 6, 32, 1), --localize-me
+        interruptRange("interrupt_cd_icon_border_size", "Border Size", "Border size, 0 hides the border.", 0, 5, 1), --localize-me
+        interruptColor("interrupt_cd_icon_border_color", "Border Color", "Border color."), --localize-me
+        {
+            type = "select",
+            get = function() return Plater.db.profile.interrupt_cd_sound end,
+            values = function() return interruptSoundOptions end,
+            name = "Ready Sound", --localize-me
+            desc = "Sound played when your interrupt is ready again.", --localize-me
+        },
+
+        {type = "blank"},
+        {type = "label", get = function() return "Interrupt Not Ready" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")}, --localize-me
+        interruptToggle("cast_statusbar_interrupt_not_ready_priority", "Above Cast Colors", "On: this color also replaces the colors from the Cast Colors tab and the important cast color.\nOff: it only replaces the default casting and channeling colors.\nNon interruptible casts always keep their color."), --localize-me
+        interruptToggle("cast_statusbar_interrupt_ready_in_time_enabled", "Ready In Time Color", "Uses another color when the interrupt is ready before the cast ends.", IS_WOW_PROJECT_MIDNIGHT), --localize-me
+        interruptColor("cast_statusbar_color_interrupt_ready_in_time", "Ready In Time", "Cast bar color when the interrupt is ready before the cast ends.", IS_WOW_PROJECT_MIDNIGHT), --localize-me
+        interruptRange("cast_statusbar_interrupt_ready_in_time_grace", "Grace Time", "The interrupt needs to be ready this many seconds before the cast ends.", 0, 2, 0.1, true, IS_WOW_PROJECT_MIDNIGHT), --localize-me
+        interruptToggle("cast_statusbar_interrupt_spark_enabled", "Ready Spark", "Shows a spark on the cast bar where the interrupt is ready again."), --localize-me
     }
 
     local castBarFrame = PlaterOptionsPanelContainerCastBarConfig
