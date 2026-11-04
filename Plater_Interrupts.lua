@@ -265,6 +265,11 @@ function Interrupts.CreatePlateWidgets(unitFrame) --private
 		end)
 		castBar.InterruptReadyBar = readyBar
 		sparkParent = readyBar
+
+		--midnight: the texture can't be swapped by a secret, it is a texture over the cast fill whose alpha follows them
+		local textureOverlay = castBar:CreateTexture(nil, "artwork", nil, -5)
+		textureOverlay:Hide()
+		castBar.InterruptTextureOverlay = textureOverlay
 	end
 
 	local spark = sparkParent:CreateTexture(nil, "overlay")
@@ -414,15 +419,18 @@ function Interrupts.UpdateCastBar(castBar) --private
 		color = nil
 	end
 
-	--the texture goes first, the color is applied on top of it
-	--a secret range result can't pick a texture, those casts keep the regular one
-	if ((isNotReady or isOutOfRange) and profile.cast_statusbar_interrupt_texture ~= "") then
-		castBar:SetStatusBarTexture(LibSharedMedia:Fetch("statusbar", profile.cast_statusbar_interrupt_texture))
-		castBar.InterruptTextureApplied = true
+	local wantsTexture = (isNotReady or isOutOfRange or isRangeSecret) and profile.cast_statusbar_interrupt_texture ~= ""
 
-	elseif (castBar.InterruptTextureApplied) then
-		castBar.InterruptTextureApplied = nil
-		castBar:SetStatusBarTexture(LibSharedMedia:Fetch("statusbar", profile.cast_statusbar_texture))
+	--classic: the texture goes first, the color is applied on top of it. midnight uses an overlay, see below
+	if (not IS_WOW_PROJECT_MIDNIGHT) then
+		if (wantsTexture) then
+			castBar:SetStatusBarTexture(LibSharedMedia:Fetch("statusbar", profile.cast_statusbar_interrupt_texture))
+			castBar.InterruptTextureApplied = true
+
+		elseif (castBar.InterruptTextureApplied) then
+			castBar.InterruptTextureApplied = nil
+			castBar:SetStatusBarTexture(LibSharedMedia:Fetch("statusbar", profile.cast_statusbar_texture))
+		end
 	end
 
 	if (color) then
@@ -443,6 +451,36 @@ function Interrupts.UpdateCastBar(castBar) --private
 			if (spellColor) then
 				castBar:SetColor(spellColor)
 			end
+		end
+	end
+
+	--midnight: the overlay takes the bar's color, its alpha hides it on non interruptible casts and, with a secret
+	--range result, in range. it is stretched over the fill, so a texture with a horizontal pattern is squeezed
+	if (IS_WOW_PROJECT_MIDNIGHT) then
+		local textureOverlay = castBar.InterruptTextureOverlay
+		if (wantsTexture) then
+			local castFill = castBar:GetStatusBarTexture()
+			local r, g, b = castFill:GetVertexColor()
+			local alpha = 1
+			if (isRangeSecret) then
+				alpha = C_CurveUtil.EvaluateColorValueFromBoolean(secretInRange, 0, 1)
+			end
+
+			textureOverlay:SetTexture(LibSharedMedia:Fetch("statusbar", profile.cast_statusbar_interrupt_texture))
+			textureOverlay:SetAllPoints(castFill)
+			textureOverlay:SetVertexColor(r, g, b, alpha)
+			if (type(castBar.notInterruptible) ~= "nil") then
+				textureOverlay:SetAlphaFromBoolean(castBar.notInterruptible, 0, 1)
+			else
+				textureOverlay:SetAlpha(1)
+			end
+
+			textureOverlay:Show()
+			castBar.InterruptTextureApplied = true
+
+		elseif (castBar.InterruptTextureApplied) then
+			castBar.InterruptTextureApplied = nil
+			textureOverlay:Hide()
 		end
 	end
 
@@ -471,6 +509,13 @@ function Interrupts.UpdateCastBar(castBar) --private
 				readyBar:SetPoint("topleft", castFill, "topright")
 				readyBar:SetPoint("bottomleft", castFill, "bottomright")
 				spark:SetPoint("center", readyBar:GetStatusBarTexture(), "right")
+			end
+
+			--no spark on non interruptible casts
+			if (type(castBar.notInterruptible) ~= "nil") then
+				readyBar:SetAlphaFromBoolean(castBar.notInterruptible, 0, 1)
+			else
+				readyBar:SetAlpha(1)
 			end
 
 			readyBar:Show()
