@@ -8,11 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1793183085, "New Feature", "Nov 4th, 2026", "Adding 'interrupt not ready coloring' feature.", "cont1nuity"},
-			{1793183085, "Bug Fix", "Nov 1st, 2026", "Fixing some issues around search layout and designer errors.", "cont1nuity"},
-			{1793183085, "Bug Fix", "Oct 29th, 2026", "Fixing some rune display issues.", "cont1nuity"},
-			{1793183085, "Bug Fix", "Oct 29th, 2026", "Fixing oversized widgets.", "cont1nuity"},
-			{1793183085, "New Feature", "Oct 29th, 2026", "Adding options to disable aura tracking per unit type.", "cont1nuity"},
+			{1793822733, "New Feature", "Nov 4th, 2026", "Adding 'interrupt not ready coloring' feature.", "cont1nuity"},
+			{1793822733, "Bug Fix", "Nov 1st, 2026", "Fixing some issues around search layout and designer errors.", "cont1nuity"},
+			{1793822733, "Bug Fix", "Oct 29th, 2026", "Fixing some rune display issues.", "cont1nuity"},
+			{1793822733, "Bug Fix", "Oct 29th, 2026", "Fixing oversized widgets.", "cont1nuity"},
+			{1793822733, "New Feature", "Oct 29th, 2026", "Adding options to disable aura tracking per unit type.", "cont1nuity"},
 			
 			{1793183085, "Backend Change", "Oct 20th, 2026", "Adding option for Aura Colors to not override threat.", "cont1nuity"},
 			{1793183085, "Bug Fix", "Oct 20th, 2026", "Fixing fonts on auras not applying correctly.", "cont1nuity"},
