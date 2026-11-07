@@ -16,24 +16,12 @@
 ## OptionalDeps: Masque, CustomNames
 ## IconTexture-blank: 982414
 ## IconTexture: Interface\AddOns\Plater\images\cast_bar
-#@version-retail@
-## Version: @project-version@-Retail
-#@end-version-retail@
-#@version-cata@
-## Version: @project-version@-Cata
-#@end-version-cata@
-#@version-mists@
-## Version: @project-version@-Mists
-#@end-version-mists@
-#@version-bcc@
-## Version: @project-version@-TBC
-#@end-version-bcc@
-#@version-classic@
-## Version: @project-version@-Vanilla
-#@end-version-classic@
-#@version-forever@
-## Version: @project-version@-Forever
-#@end-version-forever@
+## Version: @project-version@-Retail [AllowLoadGameType standard]
+## Version: @project-version@-Cata [AllowLoadGameType cata]
+## Version: @project-version@-Mists [AllowLoadGameType mists]
+## Version: @project-version@-TBC [AllowLoadGameType tbc]
+## Version: @project-version@-Vanilla [AllowLoadGameType vanilla]
+## Version: @project-version@-Forever [AllowLoadGameType camelot][ExcludeLoadGameType standard, classic]
 ## X-Curse-Project-ID: 100547
 ## X-Wago-ID: kRNLep6o
 
