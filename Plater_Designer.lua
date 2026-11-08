@@ -694,7 +694,6 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     castBar:SetValue(0.5)
 
     castBar:Show()
-    castBar:AdjustPointsOffset(0, -30)
 
     --castBar:ClearAllPoints()
 
@@ -1145,6 +1144,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         --aura preview runs the whole time the designer tab is visible, not just when the
         --Auras Layout widget is selected.
         designer.StartAuraTest()
+        designer.RequestPreviewRefresh()
     end)
 
     editorMainFrame:SetScript("OnHide", function()
@@ -1722,3 +1722,24 @@ function designer.UpdatePreview()
     --so Plater.UpdateTarget never runs the indicator code path for it)
     Plater.UpdateTargetIndicator(plateFrame)
 end
+
+function designer.RefreshPreview()
+    local unitFrame = plateFrame.unitFrame
+
+    Plater.UpdatePlateFrame(plateFrame, ACTORTYPE_ENEMY_NPC, true, true)
+    Plater.UpdateTargetIndicator(plateFrame)
+    unitFrame:SetFrameStrata("FULLSCREEN")
+
+    unitFrame.unitName:SetText("Unit Name")
+    unitFrame.healthBar.lifePercent:Hide()
+    unitFrame.PlaterRaidTargetFrame.RaidTargetIcon:Show()
+end
+
+function designer.RequestPreviewRefresh()
+    if (not Plater.DesignerWindow or not Plater.DesignerWindow:IsVisible()) then
+        return
+    end
+    detailsFramework.Schedules.AfterById(0, designer.RefreshPreview, "PlaterDesignerRefreshPreview")
+end
+
+Plater.RegisterRefreshDBCallback(designer.RequestPreviewRefresh)
