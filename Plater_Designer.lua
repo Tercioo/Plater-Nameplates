@@ -576,7 +576,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     previewScrollBox.ScrollBar:SetScript("OnValueChanged", nil)
 
     --scroll bars, the blizzard template one is replaced by two DF sliders using the scrollbox look
-    local previewScrollTemplate = {backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1}, backdropbordercolor = {0, 0, 0, 0.3}, thumbtexture = {file = [[Interface\AddOns\Details\images\icons2]], leftTexCoord = 482/512, rightTexCoord = 492/512, topTexCoord = 104/512, bottomTexCoord = 120/512}, thumbwidth = 12, thumbheight = 12, thumbcolor = {0.6, 0.6, 0.6, 0.95}}
+    local previewScrollTemplate = {backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1}, backdropbordercolor = {0, 0, 0, 0.3}, thumbtexture = [[Interface\Buttons\WHITE8X8]], thumbwidth = 12, thumbheight = 12, thumbcolor = {0.6, 0.6, 0.6, 0.95}}
     local previewHorizontalScroll = detailsFramework:CreateSlider(previewNameplateFrame, 100, 12, 0, 400, 1, 200, false, nil, "$parentHorizontalScroll", nil, previewScrollTemplate)
     previewHorizontalScroll:SetPoint("bottomleft", previewNameplateFrame, "bottomleft", 0, 2)
     previewHorizontalScroll:SetPoint("bottomright", previewNameplateFrame, "bottomright", -26, 2)
@@ -1679,6 +1679,7 @@ function designer.UpdatePreview()
     Plater.UpdateUIParentLevels(unitFrame)
 
     Plater.UpdatePlateFrame(plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
+    designer.UpdatePreviewStrata()
 
     Plater.OnUpdateHealth(healthBar)
     Plater.QuickHealthUpdate(unitFrame)
@@ -1768,14 +1769,25 @@ function designer.UpdatePreview()
     Plater.UpdateTargetIndicator(plateFrame)
 end
 
+function designer.UpdatePreviewStrata()
+    local unitFrame = plateFrame.unitFrame
+    local strata = plateFrame:GetFrameStrata()
+    for _, frame in ipairs({unitFrame, unitFrame.healthBar, unitFrame.castBar, unitFrame.powerBar, unitFrame.BuffFrame, unitFrame.BuffFrame2, unitFrame.ExtraIconFrame, unitFrame.PlaterRaidTargetFrame, plateFrame.PlaterAnchorFrame}) do
+        frame:SetFrameStrata(strata)
+    end
+end
+
 function designer.RefreshPreview()
     local unitFrame = plateFrame.unitFrame
 
     Plater.UpdatePlateFrame(plateFrame, ACTORTYPE_ENEMY_NPC, true, true)
     Plater.UpdateUIParentLevels(unitFrame)
+    designer.UpdatePreviewStrata()
     Plater.UpdateTargetIndicator(plateFrame)
 
     unitFrame.unitName:SetText("Unit Name")
+    plateFrame.ActorNameSpecial:Show()
+    plateFrame.ActorTitleSpecial:Show()
     unitFrame.healthBar.lifePercent:Hide()
     unitFrame.PlaterRaidTargetFrame.RaidTargetIcon:Show()
 end
