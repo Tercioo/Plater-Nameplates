@@ -2502,9 +2502,14 @@ Plater.AnchorNamesByPhraseId = {
 				if (plateFrame and plateFrame.unitFrame.PlaterOnScreen) then
 					local unitFrame = plateFrame.unitFrame
 					local unitName, unitSurname = UnitName (unitID)
+					--forever: the friend list holds the full name (name and surname)
+					local unitFullName = unitName
+					if (IS_WOW_PROJECT_FOREVER and unitSurname) then
+						unitFullName = unitName .. Constants.CharacterNameSeparatorConsts.CHARACTERNAME_SURNAME_SEPARATOR .. unitSurname
+					end
 					local unitNameTranslit = unitName
-					if (IS_WOW_PROJECT_FOREVER and unitSurname and DB_PLATE_CONFIG[plateFrame.actorType].show_surname) then
-						unitNameTranslit = unitName .. Constants.CharacterNameSeparatorConsts.CHARACTERNAME_SURNAME_SEPARATOR .. unitSurname
+					if (IS_WOW_PROJECT_FOREVER and DB_PLATE_CONFIG[plateFrame.actorType].show_surname) then
+						unitNameTranslit = unitFullName
 					end
 					if DB_USE_CUSTOM_NAMES then
 						unitNameTranslit = LibCustomNames.UnitName (unitID)
@@ -2515,9 +2520,11 @@ Plater.AnchorNamesByPhraseId = {
 					plateFrame [MEMBER_NAME] = unitNameTranslit
 					plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and plateFrame [MEMBER_NAME] or "") or lower (plateFrame [MEMBER_NAME])
 					plateFrame.unitNameInternal = unitName
+					plateFrame.unitFullNameInternal = unitFullName
 					unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
 					unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 					unitFrame.unitNameInternal = unitName
+					unitFrame.unitFullNameInternal = unitFullName
 					
 					if (plateFrame.IsSelf) then
 						--name isn't shown in the personal bar
@@ -4065,9 +4072,14 @@ Plater.AnchorNamesByPhraseId = {
 			--cache values
 			local unitName, unitSurname = UnitName (unitID)
 			unitName = unitName or ""
+			--forever: the friend list holds the full name (name and surname)
+			local unitFullName = unitName
+			if (IS_WOW_PROJECT_FOREVER and unitSurname) then
+				unitFullName = unitName .. Constants.CharacterNameSeparatorConsts.CHARACTERNAME_SURNAME_SEPARATOR .. unitSurname
+			end
 			local unitNameTranslit = unitName
-			if (IS_WOW_PROJECT_FOREVER and unitSurname and DB_PLATE_CONFIG[plateFrame.actorType].show_surname) then
-				unitNameTranslit = unitName .. Constants.CharacterNameSeparatorConsts.CHARACTERNAME_SURNAME_SEPARATOR .. unitSurname
+			if (IS_WOW_PROJECT_FOREVER and DB_PLATE_CONFIG[plateFrame.actorType].show_surname) then
+				unitNameTranslit = unitFullName
 			end
 			if DB_USE_CUSTOM_NAMES then
 				unitNameTranslit = LibCustomNames.UnitName (unitID) or ""
@@ -4081,6 +4093,7 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame.namePlateIsBossMob = UnitIsBossMob and UnitIsBossMob(unitID)
 			plateFrame.namePlateIsLieutenant = UnitIsLieutenant and UnitIsLieutenant(unitID)
 			plateFrame.unitNameInternal = unitName
+			plateFrame.unitFullNameInternal = unitFullName
 
 			--clear name schedules
 			unitFrame.ScheduleNameUpdate = nil
@@ -4094,6 +4107,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame.namePlateIsBossMob = plateFrame.namePlateIsBossMob
 			unitFrame.namePlateIsLieutenant = plateFrame.namePlateIsLieutenant
 			unitFrame.unitNameInternal = unitName
+			unitFrame.unitFullNameInternal = unitFullName
 			unitFrame [MEMBER_UNITID] = unitID
 			unitFrame.namePlateThreatPercent = 0
 			unitFrame.namePlateThreatIsTanking = nil
@@ -8454,7 +8468,7 @@ end
 				DF:SetFontColor (nameFontString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color))
 				plateFrame.isFriend = true
 				
-			elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color and not issecretvalue(plateFrame.unitNameInternal) and Plater.FriendsCache [plateFrame.unitNameInternal]) then
+			elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color and not issecretvalue(plateFrame.unitFullNameInternal) and Plater.FriendsCache [plateFrame.unitFullNameInternal]) then
 				--is regular friend
 				DF:SetFontColor (nameFontString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color))
 				--DF:SetFontOutline (nameFontString, plateConfigs.actorname_text_shadow)
@@ -8654,7 +8668,7 @@ end
 			DF:SetFontColor (guildString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color))
 			plateFrame.isFriend = true
 		
-		elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color and not issecretvalue(plateFrame.unitNameInternal) and Plater.FriendsCache [plateFrame.unitNameInternal]) then
+		elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color and not issecretvalue(plateFrame.unitFullNameInternal) and Plater.FriendsCache [plateFrame.unitFullNameInternal]) then
 			--is regular friend
 			DF:SetFontColor (nameString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color))
 			DF:SetFontColor (guildString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color))
@@ -11942,7 +11956,7 @@ end
 	
 	--return if the unit is in the friends list
 	function Plater.IsUnitInFriendsList (unitFrame)
-		return Plater.FriendsCache [unitFrame.unitNameInternal]
+		return Plater.FriendsCache [unitFrame.unitFullNameInternal]
 	end
 	
 	--> api version of the tap denied function

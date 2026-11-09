@@ -50,6 +50,7 @@
 ---@field TargetNeonDown texture
 ---@field Top3DFrame frame
 ---@field unitNameInternal string
+---@field unitFullNameInternal string name and surname on forever, same as unitNameInternal elsewhere
 ---@field unitFrame unitframe
 ---@field UnitFrame frame unit frame from blizzard
 ---@field unitFramePlater table backup the unit frame address so we can restore it in case a script messes up and override the unit frame
@@ -102,6 +103,7 @@
 ---@field ScheduleNameUpdate boolean
 ---@field InCombat boolean
 ---@field unitNameInternal string
+---@field unitFullNameInternal string name and surname on forever, same as unitNameInternal elsewhere
 ---@field namePlateThreatPercent number
 ---@field namePlateThreatIsTanking boolean?
 ---@field namePlateThreatStatus number?
