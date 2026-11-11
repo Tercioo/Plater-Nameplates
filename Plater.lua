@@ -3617,19 +3617,34 @@ Plater.AnchorNamesByPhraseId = {
 				--Plater.SetAnchor(unitFrame.softInteractIconFrame, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.PlateFrame)
 			
 
-				if PixelUtil.SetRoundLayoutToNearestPixelRecursively then
-					unitFrame:SetRoundLayoutToNearestPixel(true)
-					for _, region in ipairs({unitFrame:GetRegions()}) do
-						region:SetRoundLayoutToNearestPixel(true)
+				--whole pixel layout where the client has it, and no texture sharpening, it shimmers while the plate scales
+				local hasRoundLayout = PixelUtil.SetRoundLayoutToNearestPixelRecursively ~= nil
+				local setPixelLayout
+				setPixelLayout = function(frame)
+					if (hasRoundLayout) then
+						frame:SetRoundLayoutToNearestPixel(true)
+					end
+
+					for _, region in ipairs({frame:GetRegions()}) do
+						if (hasRoundLayout) then
+							region:SetRoundLayoutToNearestPixel(true)
+						end
+
+						if (region.SetSnapToPixelGrid) then
+							region:SetSnapToPixelGrid(false)
+							region:SetTexelSnappingBias(0)
+						end
 					end
 
 					--aura containers (marked by frameInfo) are skipped, their blizzard aura buttons are forbidden to addon code
-					for _, child in ipairs({unitFrame:GetChildren()}) do
+					for _, child in ipairs({frame:GetChildren()}) do
 						if (not child.frameInfo) then
-							PixelUtil.SetRoundLayoutToNearestPixelRecursively(child, true)
+							setPixelLayout(child)
 						end
 					end
 				end
+
+				setPixelLayout(unitFrame)
 
 			--> name plate created hook
 				if (HOOK_NAMEPLATE_CREATED.ScriptAmount > 0) then
