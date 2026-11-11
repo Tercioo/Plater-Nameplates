@@ -393,7 +393,6 @@ function Interrupts.UpdateCastBar(castBar) --private
 	local isReadyInTime = readyAt and readyAt < castBar.spellEndTime
 
 	local color
-	local isOutOfRange = false
 	local isRangeSecret = false
 	local secretInRange
 	if (isNotReady) then
@@ -414,7 +413,6 @@ function Interrupts.UpdateCastBar(castBar) --private
 			secretInRange = inRange
 		elseif (inRange == false) then
 			color = profile.cast_statusbar_color_interrupt_out_of_range
-			isOutOfRange = true
 		end
 	end
 
@@ -423,7 +421,8 @@ function Interrupts.UpdateCastBar(castBar) --private
 		color = nil
 	end
 
-	local wantsTexture = (isNotReady or isOutOfRange or isRangeSecret) and profile.cast_statusbar_interrupt_texture ~= ""
+	--out of range is only a color, the texture marks the interrupt not ready (in or out of range)
+	local wantsTexture = isNotReady and profile.cast_statusbar_interrupt_texture ~= ""
 
 	--classic: the texture goes first, the color is applied on top of it. midnight uses an overlay, see below
 	if (not IS_WOW_PROJECT_MIDNIGHT) then
@@ -458,21 +457,16 @@ function Interrupts.UpdateCastBar(castBar) --private
 		end
 	end
 
-	--midnight: the overlay takes the bar's color, its alpha hides it on non interruptible casts and, with a secret
-	--range result, in range. it is stretched over the fill, so a texture with a horizontal pattern is squeezed
+	--midnight: the overlay takes the bar's color, its alpha hides it on non interruptible casts.
+	--it is stretched over the fill, so a texture with a horizontal pattern is squeezed
 	if (IS_WOW_PROJECT_MIDNIGHT) then
 		local textureOverlay = castBar.InterruptTextureOverlay
 		if (wantsTexture) then
 			local castFill = castBar:GetStatusBarTexture()
 			local r, g, b = castFill:GetVertexColor()
-			local alpha = 1
-			if (isRangeSecret) then
-				alpha = C_CurveUtil.EvaluateColorValueFromBoolean(secretInRange, 0, 1)
-			end
-
 			textureOverlay:SetTexture(LibSharedMedia:Fetch("statusbar", profile.cast_statusbar_interrupt_texture))
 			textureOverlay:SetAllPoints(castFill)
-			textureOverlay:SetVertexColor(r, g, b, alpha)
+			textureOverlay:SetVertexColor(r, g, b, 1)
 			if (type(castBar.notInterruptible) ~= "nil") then
 				textureOverlay:SetAlphaFromBoolean(castBar.notInterruptible, 0, 1)
 			else

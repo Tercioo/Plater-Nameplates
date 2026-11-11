@@ -665,7 +665,7 @@ function platerInternal.CreateCastBarOptions()
             get = function() return Plater.db.profile.cast_statusbar_interrupt_texture end,
             values = function() return interruptTextureOptions end,
             name = "OPTIONS_TEXTURE",
-            desc = "Cast bar texture while your interrupt is on cooldown or the caster is out of its range.", --localize-me
+            desc = "Cast bar texture while your interrupt is on cooldown.", --localize-me
         },
 
         {type = "breakline"},
