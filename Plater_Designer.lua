@@ -567,6 +567,60 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     previewNameplateFrame:SetPoint("topright", editorMainFrame, "topright", -5, -5)
     previewNameplateFrame:SetFrameLevel(layoutEditor:GetFrameLevel() + 1)
 
+    --clipped scroll area for the preview, so big plates do not spill over the options
+    local previewScrollBox = detailsFramework:CreateCanvasScrollBox(previewNameplateFrame, nil, "$parentScrollBox")
+    previewScrollBox:EnableMouse(false)
+    previewScrollBox:SetPoint("topleft", previewNameplateFrame, "topleft", 0, -40)
+    previewScrollBox:SetPoint("bottomright", previewNameplateFrame, "bottomright", -26, 20)
+    previewScrollBox.ScrollBar:Hide()
+    previewScrollBox.ScrollBar:SetScript("OnValueChanged", nil)
+
+    --scroll bars, the blizzard template one is replaced by two DF sliders using the scrollbox look
+    local previewScrollTemplate = {backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1}, backdropbordercolor = {0, 0, 0, 0.3}, thumbtexture = [[Interface\Buttons\WHITE8X8]], thumbwidth = 12, thumbheight = 12, thumbcolor = {0.6, 0.6, 0.6, 0.95}}
+    local previewHorizontalScroll = detailsFramework:CreateSlider(previewNameplateFrame, 100, 12, 0, 400, 1, 200, false, nil, "$parentHorizontalScroll", nil, previewScrollTemplate)
+    previewHorizontalScroll:SetPoint("bottomleft", previewNameplateFrame, "bottomleft", 0, 2)
+    previewHorizontalScroll:SetPoint("bottomright", previewNameplateFrame, "bottomright", -26, 2)
+    previewHorizontalScroll:SetHook("OnValueChanged", function(self, fixedValue, value)
+        previewScrollBox:SetHorizontalScroll(value)
+    end)
+    local previewVerticalScroll = detailsFramework:CreateSlider(previewNameplateFrame, 12, 100, 0, 400, 1, 200, false, nil, "$parentVerticalScroll", nil, previewScrollTemplate)
+    previewVerticalScroll.widget:SetOrientation("vertical")
+    previewVerticalScroll:SetPoint("topright", previewNameplateFrame, "topright", -7, -40)
+    previewVerticalScroll:SetPoint("bottomright", previewNameplateFrame, "bottomright", -7, 20)
+    previewVerticalScroll:SetHook("OnValueChanged", function(self, fixedValue, value)
+        previewScrollBox:SetVerticalScroll(value)
+    end)
+    for _, previewScroll in ipairs({previewHorizontalScroll, previewVerticalScroll}) do
+        previewScroll.amt:Hide()
+        previewScroll.widget:SetScript("OnEnter", nil)
+        previewScroll.widget:SetScript("OnLeave", nil)
+        previewScroll:SetHook("OnMouseDown", function() return true end)
+    end
+
+    --mouse wheel scrolls vertically, the scroll child is 400px bigger than the view and starts centered
+    previewScrollBox:SetScript("OnMouseWheel", function(self, delta)
+        previewVerticalScroll:SetValue(previewVerticalScroll:GetValue() - delta * self:GetScrollSpeed())
+    end)
+    previewScrollBox:SetScript("OnSizeChanged", function(self, width, height)
+        self.child:SetSize(width + 400, height + 400)
+        self.recenter = true
+    end)
+    previewScrollBox:SetScript("OnScrollRangeChanged", function(self)
+        if (not self.recenter) then
+            return
+        end
+        self.recenter = nil
+        self:SetVerticalScroll(200)
+        self:SetHorizontalScroll(200)
+        previewVerticalScroll:SetValue(200)
+        previewHorizontalScroll:SetValue(200)
+    end)
+
+    --editor selection corners and grips need to be clipped together with the preview
+    layoutEditor:GetOverTheTopFrame():SetParent(previewScrollBox.child)
+    layoutEditor:GetOverTheTopFrame():SetFrameStrata(previewScrollBox:GetFrameStrata())
+    layoutEditor:GetOverTheTopFrame():SetFrameLevel(previewNameplateFrame:GetFrameLevel() + 200)
+
     local findWidgetExtraOptionTable = function(sectionName, tableName)
         local extraOptionsSection = options.WidgetSettingsExtraOptions[sectionName]
         if (extraOptionsSection) then
@@ -674,9 +728,9 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     selectFontDropdown.icon:SetTexture([[Interface\AnimCreate\AnimCreateIcons]])
     selectFontDropdown.icon:SetTexCoord(0, 32/128, 64/128, 96/128)
 
-    plateFrame = designer.CreatePreview(previewNameplateFrame)
+    plateFrame = designer.CreatePreview(previewScrollBox.child)
     --createFrameTag(plateFrame, "nameplate")
-    plateFrame:SetPoint("center", previewNameplateFrame, "center", 0, 50)
+    plateFrame:SetPoint("center", previewScrollBox.child, "center", 0, 50)
     plateFrame:SetScale(1.0)
     plateFrame:SetSize(180, 60)
     plateFrame.unit = "player"
@@ -694,7 +748,6 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     castBar:SetValue(0.5)
 
     castBar:Show()
-    castBar:AdjustPointsOffset(0, -30)
 
     --castBar:ClearAllPoints()
 
@@ -1138,13 +1191,12 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         unitFrame.BuffFrame:Show()
         unitFrame.BuffFrame2:Show()
 
-        plateFrame.unitFrame:SetParent(UIParent)
-        plateFrame.unitFrame:SetFrameStrata("FULLSCREEN")
         plateFrame.unitFrame:Show()
 
         --aura preview runs the whole time the designer tab is visible, not just when the
         --Auras Layout widget is selected.
         designer.StartAuraTest()
+        designer.RequestPreviewRefresh()
     end)
 
     editorMainFrame:SetScript("OnHide", function()
@@ -1157,10 +1209,6 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         actorTitleSpecial:Hide()
         actorNameSpecial:Hide()
 
-        C_Timer.After(1, function()
-            plateFrame:Hide()
-        end)
-
         unitFrame.BuffFrame:Hide()
         unitFrame.BuffFrame2:Hide()
 
@@ -1171,7 +1219,6 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
 
         designer.StopAuraTest()
 
-        plateFrame.unitFrame:SetParent(editorMainFrame)
         plateFrame.unitFrame:Hide()
     end)
 
@@ -1281,6 +1328,8 @@ function designer.CreatePreview(parent)
 
     --simulate the creation of a game's nameplate, this creates the nameplate.unitFrame and its widgets
     platerInternal.Events.GetEventFunction("NAME_PLATE_CREATED")("NAME_PLATE_CREATED", plateFrame)
+    plateFrame.unitFrame:SetParent(plateFrame)
+    plateFrame.unitFrame.baseFrameLevel = nil
     
     platerInternal.Auras.CreateOldAuraContainers(plateFrame.unitFrame) -- override with old style to mitigate issues...
 
@@ -1630,6 +1679,7 @@ function designer.UpdatePreview()
     Plater.UpdateUIParentLevels(unitFrame)
 
     Plater.UpdatePlateFrame(plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
+    designer.UpdatePreviewStrata()
 
     Plater.OnUpdateHealth(healthBar)
     Plater.QuickHealthUpdate(unitFrame)
@@ -1712,13 +1762,41 @@ function designer.UpdatePreview()
     local raidTargetIcon = unitFrame.PlaterRaidTargetFrame.RaidTargetIcon
     local extraRaidMark = healthBar.ExtraRaidMark
 
-    plateFrame:SetParent(UIParent)
-    plateFrame:SetFrameStrata("FULLSCREEN")
-    plateFrame.unitFrame:SetFrameStrata("FULLSCREEN")
-
     Plater.UpdatePlateSize(plateFrame)
 
     --draw the bracket indicator on the preview (the preview unit is not the player target
     --so Plater.UpdateTarget never runs the indicator code path for it)
     Plater.UpdateTargetIndicator(plateFrame)
 end
+
+function designer.UpdatePreviewStrata()
+    local unitFrame = plateFrame.unitFrame
+    local strata = plateFrame:GetFrameStrata()
+    for _, frame in ipairs({unitFrame, unitFrame.healthBar, unitFrame.castBar, unitFrame.powerBar, unitFrame.BuffFrame, unitFrame.BuffFrame2, unitFrame.ExtraIconFrame, unitFrame.PlaterRaidTargetFrame, plateFrame.PlaterAnchorFrame}) do
+        frame:SetFrameStrata(strata)
+    end
+end
+
+function designer.RefreshPreview()
+    local unitFrame = plateFrame.unitFrame
+
+    Plater.UpdatePlateFrame(plateFrame, ACTORTYPE_ENEMY_NPC, true, true)
+    Plater.UpdateUIParentLevels(unitFrame)
+    designer.UpdatePreviewStrata()
+    Plater.UpdateTargetIndicator(plateFrame)
+
+    unitFrame.unitName:SetText("Unit Name")
+    plateFrame.ActorNameSpecial:Show()
+    plateFrame.ActorTitleSpecial:Show()
+    unitFrame.healthBar.lifePercent:Hide()
+    unitFrame.PlaterRaidTargetFrame.RaidTargetIcon:Show()
+end
+
+function designer.RequestPreviewRefresh()
+    if (not Plater.DesignerWindow or not Plater.DesignerWindow:IsVisible()) then
+        return
+    end
+    detailsFramework.Schedules.AfterById(0, designer.RefreshPreview, "PlaterDesignerRefreshPreview")
+end
+
+Plater.RegisterRefreshDBCallback(designer.RequestPreviewRefresh)
