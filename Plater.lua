@@ -5276,7 +5276,11 @@ function Plater.OnInit() --private --~oninit ~init
 							end
 							--TextureLoadingGroupMixin.AddTexture({ textures = self }, "explicitIsPlayer")
 						end
-						TextureLoadingGroupMixin.AddTexture({ textures = self.optionTable }, "colorNameBySelection")
+						if Plater.db.profile.use_advanced_default_coloring then
+							TextureLoadingGroupMixin.AddTexture({ textures = self.optionTable }, "colorNameBySelection")
+						else
+							TextureLoadingGroupMixin.RemoveTexture({ textures = self.optionTable }, "colorNameBySelection")
+						end
 					--end
 				end)
 
@@ -7125,27 +7129,35 @@ end
 	
 	-- default blizzard plate shenanigans
 	function Plater.UpdateBaseNameplateOptions()
-		if IS_WOW_PROJECT_MIDNIGHT_API then
-			if Plater.db.profile.hide_realm_name_on_blizzard then
-				TextureLoadingGroupMixin.RemoveTexture({ textures = NamePlateFriendlyFrameOptions }, "updateNameUsesGetUnitName")
-			else
-				TextureLoadingGroupMixin.AddTexture({ textures = NamePlateFriendlyFrameOptions }, "updateNameUsesGetUnitName")
-			end
-			return 
+		if Plater.db.profile.hide_realm_name_on_blizzard then
+			TextureLoadingGroupMixin.RemoveTexture({ textures = NamePlateFriendlyFrameOptions }, "updateNameUsesGetUnitName")
+		else
+			TextureLoadingGroupMixin.AddTexture({ textures = NamePlateFriendlyFrameOptions }, "updateNameUsesGetUnitName")
 		end
+
 		if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
 			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "hideHealthbar")
 			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "hideCastbar")
-			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameBySelection")
-			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameWithExtendedColors")
 			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "hideHealthbar")
 			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "hideCastbar")
-			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameBySelection")
-			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameWithExtendedColors")
 			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "hideHealthbar")
 			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "hideCastbar")
-			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameBySelection")
-			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameWithExtendedColors")
+
+			if Plater.db.profile.use_advanced_default_coloring then
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameWithExtendedColors")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameWithExtendedColors")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameWithExtendedColors")
+			else
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameWithExtendedColors")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameWithExtendedColors")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameWithExtendedColors")
+			end
 			
 			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "showLevel")
 			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "showLevel")
@@ -7159,29 +7171,40 @@ end
 			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "hideCastbar")
 			
 			
-			if not IS_WOW_PROJECT_MAINLINE then
-				--other defaults
+			--other defaults
+			if Plater.db.profile.use_advanced_default_coloring then
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameWithExtendedColors")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameWithExtendedColors")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameWithExtendedColors")
+			else
 				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameBySelection")
 				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameWithExtendedColors")
 				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameBySelection")
 				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameWithExtendedColors")
 				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameBySelection")
 				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameWithExtendedColors")
-				
-				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "showLevel")
-				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "showLevel")
-				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "showLevel")
 			end
+				
+			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "showLevel")
+			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "showLevel")
+			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "showLevel")
 
 		end
-		if not IS_WOW_PROJECT_MAINLINE then
-			for _, plateFrame in pairs(C_NamePlate.GetNamePlates(true)) do
-				if (plateFrame and plateFrame.UnitFrame and plateFrame.UnitFrame.CastBar) then
-					if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
-						TextureLoadingGroupMixin.RemoveTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
-					else
-						TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
-					end
+
+		for _, plateFrame in pairs(C_NamePlate.GetNamePlates(true)) do
+			if (plateFrame and plateFrame.UnitFrame and plateFrame.UnitFrame.CastBar) then
+				if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
+					TextureLoadingGroupMixin.RemoveTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+				else
+					TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+				end
+				if Plater.db.profile.use_advanced_default_coloring then
+					TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.optionTable }, "colorNameBySelection")
+				else
+					TextureLoadingGroupMixin.RemoveTexture({ textures = plateFrame.UnitFrame.optionTable }, "colorNameBySelection")
 				end
 			end
 		end

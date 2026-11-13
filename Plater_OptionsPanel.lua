@@ -6349,6 +6349,7 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.use_advanced_default_coloring = value
 				Plater.UpdateBaseNameplateOptions()
+				if not InCombatLockdown() then SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName")) end
 			end,
 			name = "Use blizzard advanced name colors",
 			desc = "Enable the advanced coloring mode for names on blizzard nameplates.",
