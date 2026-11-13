@@ -6342,6 +6342,18 @@ local relevance_options = {
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT_API,
 		},
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return Plater.db.profile.use_advanced_default_coloring end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.use_advanced_default_coloring = value
+				Plater.UpdateBaseNameplateOptions()
+			end,
+			name = "Use blizzard advanced name colors",
+			desc = "Enable the advanced coloring mode for names on blizzard nameplates.",
+			nocombat = true,
+		},
 		
 		{
 			type = "toggle",
