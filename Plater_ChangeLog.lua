@@ -8,6 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1794744555, "Backend Change", "Nov 13th, 2026", "New option to enable blizzard nameplates 'advanced coloring'.", "cont1nuity"},
+			{1794744555, "Backend Change", "Nov 11th, 2026", "Some improvements to pixel perfect layout.", "cont1nuity"},
+			{1794744555, "Bug Fix", "Nov 10th, 2026", "Fixing some issues with the 'Interrupt not ready' features.", "cont1nuity"},
+			{1794744555, "Bug Fix", "Nov 9th, 2026", "Fixing friends coloring.", "cont1nuity"},
+			{1794744555, "Bug Fix", "Nov 8th, 2026", "Fixing range checking for Forever.", "cont1nuity"},
+			
 			{1793822733, "New Feature", "Nov 4th, 2026", "Adding 'interrupt not ready coloring' feature.", "cont1nuity"},
 			{1793822733, "Bug Fix", "Nov 1st, 2026", "Fixing some issues around search layout and designer errors.", "cont1nuity"},
 			{1793822733, "Bug Fix", "Oct 29th, 2026", "Fixing some rune display issues.", "cont1nuity"},
