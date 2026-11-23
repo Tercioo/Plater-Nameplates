@@ -3543,6 +3543,7 @@ Plater.CreateAuraTesting()
 			return tracker.debuff_tracked_player_only
 		end
 
+		local onToggleOnlyMine = function(self, spellId, state)
 		local function refreshMineCheckboxes()
 			local playerOnly = getPlayerOnlyTable()
 			for _, line in ipairs(auraScrollBox.Frames) do
@@ -3614,6 +3615,7 @@ Plater.CreateAuraTesting()
 	end
 
 	local auraConfigPanel = DF:CreateAuraConfigPanel (auraFilterFrame, "$parentAuraConfig", Plater.db.profile, method_change_callback, aura_options, debuff_panel_texts)
+	for _, auraScrollBox in ipairs({auraConfigPanel.buff_ignored, auraConfigPanel.debuff_ignored, auraConfigPanel.buff_tracked, auraConfigPanel.debuff_tracked}) do
 	addPlayerOnlyDebuffColumn(auraConfigPanel.debuff_tracked)
 	auraConfigPanel:SetPoint ("topleft", auraFilterFrame, "topleft", 10, startY)
 	auraConfigPanel:SetSize (f:GetWidth() - 20, f:GetHeight() + startY)
