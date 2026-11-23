@@ -229,6 +229,7 @@ local MANUAL_TRACKING_BUFFS = {}
 local MANUAL_TRACKING_DEBUFFS = {}
 local AUTO_TRACKING_EXTRA_BUFFS = {}
 local AUTO_TRACKING_EXTRA_DEBUFFS = {}
+local AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY = {}
 --spell names used by the per aura healthbar colors, expandAuraCaches() resolves them into spell ids
 local AURA_COLORS = {}
 
@@ -351,7 +352,7 @@ function expandAuraCaches()
 	local toLowerCase = string.lower
 	local allIDsByName = platerInternal.Auras.spellCaches.allIDsByName
 	local missing = {}
-	local containersToExtend = DB_TRACK_METHOD == 0x1 and {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS, AURA_COLORS} or {SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS, AURA_COLORS}
+	local containersToExtend = DB_TRACK_METHOD == 0x1 and {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS, AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY, AURA_COLORS} or {SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS, AURA_COLORS}
 	for _, container in pairs (containersToExtend) do
 		local containerCopy = DF.table.copy({}, container or {})
 		for id, val in pairs(containerCopy) do
@@ -375,7 +376,7 @@ function expandAuraCaches()
 		C_Timer.After(0, function()
 			--clean spell cache
 			local copy = DF.table.copy({}, DB_AURA_NAME_CACHE)
-			local toCheck = {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS, AURA_COLORS}
+			local toCheck = {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS, AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS, AURA_COLORS}
 			local fullList = {}
 			for _, cache in pairs (toCheck) do
 				for id in pairs(cache) do
@@ -982,6 +983,7 @@ local function getCandidateFilters(frameName, force)
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
 
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
+				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_DEBUFF_BANNED)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST)
@@ -1000,6 +1002,7 @@ local function getCandidateFilters(frameName, force)
 
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
+				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
@@ -1052,8 +1055,10 @@ local function getCandidateFilters(frameName, force)
 
 			DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
 			DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
+			DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY)
 			DF.table.copy(filters.additionalInclude.excludeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
 			DF.table.copy(filters.additionalInclude.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
+			DF.table.copy(filters.additionalInclude.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY)
 		else
 			DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_BUFFS)
 			DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_DEBUFFS)
@@ -1128,10 +1133,10 @@ local function getAuraFilters(frameName, actorType, force)
 				elseif (DB_TRACK_METHOD == 0x2) then
 					isTracked = MANUAL_TRACKING_DEBUFFS[spellId]
 
-				elseif (AUTO_TRACKING_EXTRA_DEBUFFS[spellId]) then
-					--the extra tracking list shows a debuff from any caster
+				elseif (AUTO_TRACKING_EXTRA_DEBUFFS[spellId] or AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY[spellId]) then
+					--the extra tracking list supports either all casters or player only
 					isTracked = true
-					filterString = "HARMFUL"
+					filterString = AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY[spellId] and "HARMFUL|PLAYER" or "HARMFUL"
 
 				--special auras are shown on the buff special frame instead
 				elseif (not DB_DEBUFF_BANNED[spellId] and not isSpecialAura) then
@@ -1190,6 +1195,16 @@ local function getAuraFilters(frameName, actorType, force)
 					filterString = "HARMFUL",
 					candidateFilters = allCandidates.additionalInclude
 				})
+				--Use the regular aura container, but only the player's instances of selected debuffs.
+				if next(AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY) then
+					table.insert(filters, {
+						filterString = "HARMFUL|PLAYER",
+						candidateFilters = {
+							includeSpellIDs = AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY,
+							excludeSpellIDs = Plater.db.profile.aura_consolidate and CONSOLIDATED_DEBUFFS or nil,
+						},
+					})
+				end
 			end
 
 			if canAssist then
@@ -5566,7 +5581,7 @@ end
 						can_show_this_debuff = true
 					
 					--> user added this buff to track in the buff tracking tab
-					elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name] or AUTO_TRACKING_EXTRA_DEBUFFS [spellId]) then
+					elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name] or AUTO_TRACKING_EXTRA_DEBUFFS [spellId] or AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY[name] or AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY[spellId]) then
 						can_show_this_debuff = true
 					end
 					
@@ -5611,6 +5626,12 @@ end
 					can_show_this_debuff = false
 				end
 				
+				if (can_show_this_debuff and (AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY[name] or AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY[spellId])) then
+					local castByPlayer = aura.sourceIsPlayer or (sourceUnit and Plater.PlayerPetCache[UnitGUID(sourceUnit)])
+					if not castByPlayer then
+						can_show_this_debuff = false
+					end
+				end
 				if (can_show_this_debuff) then
 					--get the icon to be used by this aura
 					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
@@ -6324,9 +6345,11 @@ end
 		--> extra auras to track on automatic aura tracking
 			local extraBuffsToTrack = profile.aura_tracker.buff_tracked
 			local extraDebuffsToTrack = profile.aura_tracker.debuff_tracked
+			local extraDebuffsPlayerOnly = profile.aura_tracker.debuff_tracked_player_only or {}
 
 			wipe(AUTO_TRACKING_EXTRA_BUFFS)
 			wipe(AUTO_TRACKING_EXTRA_DEBUFFS)
+			wipe(AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY)
 
 			for spellId, flag in pairs (extraBuffsToTrack) do
 				spellId = tonumber(spellId) or spellId --ensure either actual number or name of the spell
@@ -6344,10 +6367,11 @@ end
 				spellId = tonumber(spellId) or spellId --ensure either actual number or name of the spell
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
+					local trackingCache = extraDebuffsPlayerOnly[spellId] and AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY or AUTO_TRACKING_EXTRA_DEBUFFS
 					if flag then
-						AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
+						trackingCache[spellName] = true
 					else
-						AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
+						trackingCache[spellId] = true
 					end
 				end
 			end
@@ -6357,7 +6381,7 @@ end
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
 						--AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
-						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and not (AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY[spellId] or AUTO_TRACKING_EXTRA_DEBUFFS_PLAYER_ONLY[spellName]) then
 							AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
 						end
 						CROWDCONTROL_AURA_IDS [spellId] = true

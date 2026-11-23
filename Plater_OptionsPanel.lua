@@ -3521,7 +3521,100 @@ Plater.CreateAuraTesting()
 		--DF:UnloadSpellCache()
 	end)
 	
+	--Add the 'Only Mine' column directly to Plater's own Automatic debuff scroll.
+	--Other addons may load a newer DetailsFramework than the copy bundled with Plater,
+	--so extending DF:CreateAuraScrollBox in the bundled library is unreliable.
+	local function addPlayerOnlyDebuffColumn(auraScrollBox)
+		if not auraScrollBox or not auraScrollBox.Frames then
+			return
+		end
+
+		local columnLabel = auraScrollBox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		columnLabel:SetPoint("BOTTOMRIGHT", auraScrollBox, "TOPRIGHT", -21, 2)
+		columnLabel:SetText("Only\nMine")
+		columnLabel:SetWidth(30)
+		columnLabel:SetJustifyH("CENTER")
+		DF:SetFontColor(columnLabel, "silver")
+		DF:SetFontSize(columnLabel, 10)
+
+		local function getPlayerOnlyTable()
+			local tracker = Plater.db.profile.aura_tracker
+			tracker.debuff_tracked_player_only = tracker.debuff_tracked_player_only or {}
+			return tracker.debuff_tracked_player_only
+		end
+
+		local function refreshMineCheckboxes()
+			local playerOnly = getPlayerOnlyTable()
+			for _, line in ipairs(auraScrollBox.Frames) do
+				if not line.onlyMineCheckbox and line.removebutton then
+					local checkbox = CreateFrame("CheckButton", nil, line, "UICheckButtonTemplate")
+					checkbox:SetSize(18, 18)
+					checkbox:SetPoint("RIGHT", line.removebutton, "LEFT", -3, 0)
+					checkbox:SetFrameLevel(line:GetFrameLevel() + 2)
+					checkbox:SetScript("OnClick", function(button)
+						local spellId = tonumber(button:GetParent().SpellID)
+						if spellId then
+							local selected = getPlayerOnlyTable()
+							selected[spellId] = button:GetChecked() and true or nil
+							Plater.RefreshDBUpvalues(true) --only aura filtering changed, not icon appearance
+							Plater.UpdateAllPlates()
+						end
+					end)
+					checkbox:SetScript("OnEnter", function(button)
+						GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
+						GameTooltip:SetText("Only Mine")
+						GameTooltip:AddLine("Only display your own instances of this debuff in regular auras.", 1, 1, 1, true)
+						GameTooltip:Show()
+					end)
+					checkbox:SetScript("OnLeave", function()
+						GameTooltip:Hide()
+					end)
+					line.onlyMineCheckbox = checkbox
+					--Allow long spell names to truncate before the new column.
+					if line.name then
+						line.name:SetPoint("RIGHT", checkbox, "LEFT", -2, 0)
+						line.name:SetJustifyH("LEFT")
+					end
+					--Keep the original remove behavior, but clear the saved flag before it refreshes the lines.
+					local originalRemoveClick = line.removebutton:GetScript("OnClick")
+					line.removebutton:SetScript("OnClick", function(button, ...)
+						local spellId = tonumber(button:GetParent().SpellID)
+						if spellId then
+							getPlayerOnlyTable()[spellId] = nil
+						end
+						originalRemoveClick(button, ...)
+					end)
+				end
+
+				local checkbox = line.onlyMineCheckbox
+				if checkbox then
+					local spellId = tonumber(line.SpellID)
+					if spellId and line:IsShown() then
+						local checked = playerOnly[spellId] and true or false
+						if checkbox:GetChecked() ~= checked then
+							checkbox:SetChecked(checked)
+						end
+						checkbox:Show()
+					else
+						checkbox:Hide()
+					end
+				end
+			end
+		end
+
+		--Refresh is also called on scroll, on add/remove and when opening the tab.
+		--Wrap this one scrollbox only; do not touch the shared DF implementation.
+		local originalRefresh = auraScrollBox.Refresh
+		auraScrollBox.Refresh = function(self, ...)
+			local result = originalRefresh(self, ...)
+			refreshMineCheckboxes()
+			return result
+		end
+		refreshMineCheckboxes()
+	end
+
 	local auraConfigPanel = DF:CreateAuraConfigPanel (auraFilterFrame, "$parentAuraConfig", Plater.db.profile, method_change_callback, aura_options, debuff_panel_texts)
+	addPlayerOnlyDebuffColumn(auraConfigPanel.debuff_tracked)
 	auraConfigPanel:SetPoint ("topleft", auraFilterFrame, "topleft", 10, startY)
 	auraConfigPanel:SetSize (f:GetWidth() - 20, f:GetHeight() + startY)
 	if IS_WOW_PROJECT_MIDNIGHT and not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
