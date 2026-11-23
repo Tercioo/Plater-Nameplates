@@ -3521,7 +3521,92 @@ Plater.CreateAuraTesting()
 		--DF:UnloadSpellCache()
 	end)
 	
+	--Add the 'Only Mine' column directly to Plater's own Automatic debuff scroll.
+	--Other addons may load a newer DetailsFramework than the copy bundled with Plater,
+	--so extending DF:CreateAuraScrollBox in the bundled library is unreliable.
+	local function addPlayerOnlyDebuffColumn(auraScrollBox)
+		if not auraScrollBox or not auraScrollBox.Frames then
+			return
+		end
+
+		local columnLabel = auraScrollBox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		columnLabel:SetPoint("BOTTOMRIGHT", auraScrollBox, "TOPRIGHT", -21, 2)
+		columnLabel:SetText("Only Mine")
+		columnLabel:SetWidth(30)
+		columnLabel:SetWordWrap(true)
+		columnLabel:SetJustifyH("CENTER")
+		DF:SetFontColor(columnLabel, "silver")
+		DF:SetFontSize(columnLabel, 10)
+
+		local function getPlayerOnlyTable()
+			local tracker = Plater.db.profile.aura_tracker
+			tracker.debuff_tracked_player_only = tracker.debuff_tracked_player_only or {}
+			return tracker.debuff_tracked_player_only
+		end
+
+		local onToggleOnlyMine = function(self, spellId, state)
+			getPlayerOnlyTable()[spellId] = state
+			Plater.RefreshDBUpvalues(true) --only aura filtering changed, not icon appearance
+			Plater.UpdateAllPlates()
+		end
+
+		local function refreshMineCheckboxes()
+			local playerOnly = getPlayerOnlyTable()
+			for _, line in ipairs(auraScrollBox.Frames) do
+				if not line.onlyMineCheckbox and line.removebutton then
+					local checkbox = DF:CreateSwitch(line, onToggleOnlyMine, false, nil, nil, nil, nil, "onlyMineCheckbox", "$parentOnlyMineToggle", nil, nil, nil, nil, DF:GetTemplate("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
+					checkbox:SetAsCheckBox()
+					checkbox:SetPoint("right", line.removebutton, "left", -3, 0)
+					checkbox.tooltip = "Only display your own instances of this debuff in regular auras."
+					line.onlyMineCheckbox = checkbox
+					--Allow long spell names to truncate before the new column.
+					if line.name then
+						line.name:SetPoint("RIGHT", checkbox.widget, "LEFT", -2, 0)
+						line.name:SetJustifyH("LEFT")
+						line.name:SetWordWrap(false)
+					end
+					--Keep the original remove behavior, but clear the saved flag before it refreshes the lines.
+					local originalRemoveClick = line.removebutton:GetScript("OnClick")
+					line.removebutton:SetScript("OnClick", function(button, ...)
+						local spellId = tonumber(button:GetParent().SpellID)
+						if spellId then
+							getPlayerOnlyTable()[spellId] = nil
+						end
+						originalRemoveClick(button, ...)
+					end)
+				end
+
+				local checkbox = line.onlyMineCheckbox
+				if checkbox then
+					local spellId = tonumber(line.SpellID)
+					checkbox:SetFixedParameter(spellId)
+					checkbox:SetValue(playerOnly[spellId] or false)
+				end
+			end
+		end
+
+		--Refresh is also called on scroll, on add/remove and when opening the tab.
+		--Wrap this one scrollbox only; do not touch the shared DF implementation.
+		local originalRefresh = auraScrollBox.Refresh
+		auraScrollBox.Refresh = function(self, ...)
+			local result = originalRefresh(self, ...)
+			refreshMineCheckboxes()
+			return result
+		end
+		refreshMineCheckboxes()
+	end
+
 	local auraConfigPanel = DF:CreateAuraConfigPanel (auraFilterFrame, "$parentAuraConfig", Plater.db.profile, method_change_callback, aura_options, debuff_panel_texts)
+
+	local auraListTitleRightOffset = -53
+	for _, auraScrollBox in ipairs({auraConfigPanel.buff_ignored, auraConfigPanel.debuff_ignored, auraConfigPanel.buff_tracked, auraConfigPanel.debuff_tracked}) do
+		local titleLabel = auraScrollBox:GetTitleFontString()
+		titleLabel:SetPoint("bottomright", auraScrollBox, "topright", auraListTitleRightOffset, 2)
+		titleLabel:SetJustifyH("left")
+		titleLabel:SetWordWrap(true)
+	end
+
+	addPlayerOnlyDebuffColumn(auraConfigPanel.debuff_tracked)
 	auraConfigPanel:SetPoint ("topleft", auraFilterFrame, "topleft", 10, startY)
 	auraConfigPanel:SetSize (f:GetWidth() - 20, f:GetHeight() + startY)
 	if IS_WOW_PROJECT_MIDNIGHT and not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
