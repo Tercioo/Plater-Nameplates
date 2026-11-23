@@ -3531,8 +3531,9 @@ Plater.CreateAuraTesting()
 
 		local columnLabel = auraScrollBox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		columnLabel:SetPoint("BOTTOMRIGHT", auraScrollBox, "TOPRIGHT", -21, 2)
-		columnLabel:SetText("Only\nMine")
+		columnLabel:SetText("Only Mine")
 		columnLabel:SetWidth(30)
+		columnLabel:SetWordWrap(true)
 		columnLabel:SetJustifyH("CENTER")
 		DF:SetFontColor(columnLabel, "silver")
 		DF:SetFontSize(columnLabel, 10)
@@ -3544,36 +3545,23 @@ Plater.CreateAuraTesting()
 		end
 
 		local onToggleOnlyMine = function(self, spellId, state)
+			getPlayerOnlyTable()[spellId] = state
+			Plater.RefreshDBUpvalues(true) --only aura filtering changed, not icon appearance
+			Plater.UpdateAllPlates()
+		end
+
 		local function refreshMineCheckboxes()
 			local playerOnly = getPlayerOnlyTable()
 			for _, line in ipairs(auraScrollBox.Frames) do
 				if not line.onlyMineCheckbox and line.removebutton then
-					local checkbox = CreateFrame("CheckButton", nil, line, "UICheckButtonTemplate")
-					checkbox:SetSize(18, 18)
-					checkbox:SetPoint("RIGHT", line.removebutton, "LEFT", -3, 0)
-					checkbox:SetFrameLevel(line:GetFrameLevel() + 2)
-					checkbox:SetScript("OnClick", function(button)
-						local spellId = tonumber(button:GetParent().SpellID)
-						if spellId then
-							local selected = getPlayerOnlyTable()
-							selected[spellId] = button:GetChecked() and true or nil
-							Plater.RefreshDBUpvalues(true) --only aura filtering changed, not icon appearance
-							Plater.UpdateAllPlates()
-						end
-					end)
-					checkbox:SetScript("OnEnter", function(button)
-						GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
-						GameTooltip:SetText("Only Mine")
-						GameTooltip:AddLine("Only display your own instances of this debuff in regular auras.", 1, 1, 1, true)
-						GameTooltip:Show()
-					end)
-					checkbox:SetScript("OnLeave", function()
-						GameTooltip:Hide()
-					end)
+					local checkbox = DF:CreateSwitch(line, onToggleOnlyMine, false, nil, nil, nil, nil, "onlyMineCheckbox", "$parentOnlyMineToggle", nil, nil, nil, nil, DF:GetTemplate("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
+					checkbox:SetAsCheckBox()
+					checkbox:SetPoint("right", line.removebutton, "left", -3, 0)
+					checkbox.tooltip = "Only display your own instances of this debuff in regular auras."
 					line.onlyMineCheckbox = checkbox
 					--Allow long spell names to truncate before the new column.
 					if line.name then
-						line.name:SetPoint("RIGHT", checkbox, "LEFT", -2, 0)
+						line.name:SetPoint("RIGHT", checkbox.widget, "LEFT", -2, 0)
 						line.name:SetJustifyH("LEFT")
 					end
 					--Keep the original remove behavior, but clear the saved flag before it refreshes the lines.
@@ -3590,15 +3578,8 @@ Plater.CreateAuraTesting()
 				local checkbox = line.onlyMineCheckbox
 				if checkbox then
 					local spellId = tonumber(line.SpellID)
-					if spellId and line:IsShown() then
-						local checked = playerOnly[spellId] and true or false
-						if checkbox:GetChecked() ~= checked then
-							checkbox:SetChecked(checked)
-						end
-						checkbox:Show()
-					else
-						checkbox:Hide()
-					end
+					checkbox:SetFixedParameter(spellId)
+					checkbox:SetValue(playerOnly[spellId] or false)
 				end
 			end
 		end
@@ -3615,7 +3596,15 @@ Plater.CreateAuraTesting()
 	end
 
 	local auraConfigPanel = DF:CreateAuraConfigPanel (auraFilterFrame, "$parentAuraConfig", Plater.db.profile, method_change_callback, aura_options, debuff_panel_texts)
+
+	local auraListTitleRightOffset = -53
 	for _, auraScrollBox in ipairs({auraConfigPanel.buff_ignored, auraConfigPanel.debuff_ignored, auraConfigPanel.buff_tracked, auraConfigPanel.debuff_tracked}) do
+		local titleLabel = auraScrollBox:GetTitleFontString()
+		titleLabel:SetPoint("bottomright", auraScrollBox, "topright", auraListTitleRightOffset, 2)
+		titleLabel:SetJustifyH("left")
+		titleLabel:SetWordWrap(true)
+	end
+
 	addPlayerOnlyDebuffColumn(auraConfigPanel.debuff_tracked)
 	auraConfigPanel:SetPoint ("topleft", auraFilterFrame, "topleft", 10, startY)
 	auraConfigPanel:SetSize (f:GetWidth() - 20, f:GetHeight() + startY)
