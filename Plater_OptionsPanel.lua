@@ -3563,6 +3563,7 @@ Plater.CreateAuraTesting()
 					if line.name then
 						line.name:SetPoint("RIGHT", checkbox.widget, "LEFT", -2, 0)
 						line.name:SetJustifyH("LEFT")
+						line.name:SetWordWrap(false)
 					end
 					--Keep the original remove behavior, but clear the saved flag before it refreshes the lines.
 					local originalRemoveClick = line.removebutton:GetScript("OnClick")
