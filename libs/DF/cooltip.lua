@@ -1645,6 +1645,8 @@ function DF:CreateCoolTip()
 	end
 
 	--the size of a line is secret while its frame is anchored to a secret frame, use a default size when this happens
+	local defaultLineWidth = 146 --the 170 width from Reset() minus the 24 added when building the frame
+
 	local getLineWidth = function(menuButton)
 		local leftTextWidth = menuButton.leftText:GetStringWidth()
 		local rightTextWidth = menuButton.rightText:GetStringWidth()

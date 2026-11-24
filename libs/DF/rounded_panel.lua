@@ -355,7 +355,8 @@ detailsFramework.RoundedCornerPanelMixin = {
                 end
 
                 --the size is secret while the frame is anchored to a secret frame, keep the edges from the last update
-                if (issecretvalue(self:GetWidth()) or issecretvalue(self:GetHeight())) then
+                local _, borderCornerTexture = next(self.BorderCornerTextures)
+                if (issecretvalue(self:GetWidth()) or issecretvalue(self:GetHeight()) or (borderCornerTexture and issecretvalue(borderCornerTexture:GetHeight()))) then
                     return
                 end
 

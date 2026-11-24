@@ -1051,6 +1051,7 @@ PLATER_DEFAULT_SETTINGS = {
 			debuff_banned = {},
 			buff_tracked = {},
 			debuff_tracked = {},
+			debuff_tracked_player_only = {}, --[spellId] = true: only show debuffs cast by the player
 			spell_name_cache = {},
 		},
 		
