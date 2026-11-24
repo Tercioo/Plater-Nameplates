@@ -4,6 +4,16 @@ This document explains the object editor defined in `editor.lua`. The editor is 
 
 The editor is consumed in production by `Plater Nameplates` (`AddOns/Plater/Plater_Designer.lua`) — that is the canonical reference for "what a real consumer looks like" and is referenced throughout this document.
 
+### Words the user may say
+
+| The user says | They mean |
+|---|---|
+| "the designer", "the layout editor", "the editor" | This editor (`DF:CreateEditor`). Plater and others call their screen built on it "the designer". |
+| "row button", "a row button on the option X" | A small button on the line of an option in the center panel, at its left (before the name) or right (after the control). See "Row buttons". |
+| "option", "the option X" | One line of the center panel: a label plus its control (slider, toggle, dropdown, color, text entry). X is its label as the user sees it. |
+| "reset button", "reset to default button" | The built-in row button with id `"reset"`, turned on by `show_reset_buttons`. |
+| "the search box", "the search" | The box above the center panel and `editor:SetSearchText()`. See "Search". |
+
 ---
 
 ## Mental model
@@ -79,8 +89,9 @@ function detailsFramework:CreateEditor(parent, name, options)
 | `selection_texture` | string | `"GM_BehaviorMessage_CornerTopLeft_Frame"` | Atlas / texture used for the four selection corners. |
 | `selection_size` | number | `8` | Pixel size of each selection corner. |
 | `show_undo_buttons` | boolean | `true` | If true, places an Undo / Redo button pair at the bottom-right of the editor. Set to false if you want to wire your own keybinds (`editor:Undo()` / `editor:Redo()`) instead. |
-| `show_reset_buttons` | boolean | `false` | If true, every value row in the center panel gets a square "reset to default" button at its right. See "Reset to default buttons" below. |
+| `show_reset_buttons` | boolean | `false` | If true, every value row in the center panel gets a square "reset to default" button at its right. It is one of the row buttons, see "Row buttons" and "Reset to default buttons" below. |
 | `show_disabled_reset_buttons` | boolean | `true` | Only read while `show_reset_buttons` is on. What a row whose option has no default gets: true shows the button disabled, false shows no button. |
+| `show_search_box` | boolean | `true` | If true, a search box sits above the center panel, which starts 24 pixels lower to make room for it. See "Search". |
 | `anchor_menu_height` | number? | nil | Height in pixels of the menu of every `anchordropdown` row (built-in or extra) that has no `menu_height` of its own. Each option takes 20 pixels, so 120 shows 6 and the rest scroll. nil keeps the dropdown default of 300. |
 
 ### Minimal example
@@ -323,6 +334,7 @@ Recognized fields in any attribute (built-in or extra):
 |---|---|---|
 | `key` | string | Attribute identifier. For built-ins, looked up via `profileKeyMap`. For extras, used as the profile key directly. |
 | `label` | string | Shown in the menu next to the widget. |
+| `tags` | string[]? | Extra words the search finds this option by, for words the label does not have. See "Search". |
 | `widget` (or `type`) | string | BuildMenu widget type. See "Available widget types" below. |
 | `setter` | function? | `function(widget, value)` — applies the value to the live UI object. Nil-guarded in `applyValue`, so omitting it is legal. Effectively required for the `"anchor"` key (the editor zeros offsets *between* callback and setter, see Pitfalls) and recommended elsewhere unless the 8th-arg callback covers the visual update. For anchor keys the editor passes `parentTable` instead of `value`. |
 | `default` | any | Used by some BuildMenu widgets as a fallback display value. |
@@ -332,6 +344,7 @@ Recognized fields in any attribute (built-in or extra):
 | `subkey` | string | Reserved for nested addressing within compound widgets. Most widgets don't use this. |
 | `childrenids` / `children_follow_enabled` / `children_follow_reverse` | table / boolean / boolean | Forwarded to BuildMenu. On a toggle, `children_follow_enabled = true` enables the widgets listed in `childrenids` while it is on and disables them while it is off (`children_follow_reverse` inverts that). The ids are the children's `key`s. |
 | `menu_height` | number? | Dropdown widgets only. Forwarded to BuildMenu: height in pixels of the menu with the options, 20 per option, default 300 (or `anchor_menu_height` on an anchor dropdown). Past it the menu scrolls. |
+| `buttons` | table? | Value rows only. An array of row buttons drawn on this row alone, after the editor's own. See "Row buttons". |
 | `disableif` | function? | Forwarded to BuildMenu. Returns true to disable the widget; checked on menu build. It should read the live profile, not a widget. After an edit that changes it, call `editor:RefreshDisabledOptions()` (not RefreshOptions, whose get() returns build-time values). |
 
 ---
@@ -366,7 +379,7 @@ The editor's universal `set` handler normalises across these — see "How edits 
 
 When the user changes any widget value, the same handler runs (defined inside `PrepareObjectForEditing`). The flow:
 
-1. **Normalise input.** If widget is `range`/`slider` and `usedecimals` is false, `math.floor` the value.
+1. **Normalise input.** If widget is `range`/`slider` and `usedecimals` is false, `math.floor` the value. When that floored value is just the stored value without its decimals, the handler stops here: a stored 7.5 shows as 7, nobody edited it. The reset button is the exception, it writes its default on purpose.
 2. **Snapshot OLD value.** Either `parentTable[1..4]` (for color) or `getfrompath(profileTable, profileKey)` (for everything else). This captures the pre-edit state for undo replay.
 3. **Apply the value via the shared `applyValue` closure**, which runs three ordered steps:
    - **(a) Mutate the profile.** For `color`: mutates `parentTable[1..4]` in place (preserving the table reference held by other code), then re-assigns `value = parentTable`. Otherwise: `setfrompath(profileTable, profileKey, value)`.
@@ -499,9 +512,77 @@ The editor wires its own scripts:
 
 ---
 
+## Row buttons
+
+Each value row (slider, toggle, dropdown, color, text entry) can carry any number of small buttons at its **left** (before the label) or its **right** (after the widget). Label, blank and execute rows never get one. The reset to default button is one of them.
+
+**"Row button" is the name of this feature.** When the user asks for a row button, this section is what they mean. Typical requests:
+
+- "add a row button to the option Font Size that copies its value to all other frames"
+- "add a row button to the option X that does Y"
+- "place a row button at the left side of the option X; when clicked it does Y"
+- "add a row button to every option that does Y"
+
+### Turning a request into code
+
+1. **Find the option.** The user names it by its label. Find the entry with that `label` in the consumer's `extraOptions` (or the built-in `attributes` table in `editor.lua`) and note its `key`.
+2. **Pick the side.** "left" only when the user says left; otherwise leave `side` out (right).
+3. **One option or all of them.**
+   - One extra option: add `buttons = {{...}}` to that entry in `extraOptions`.
+   - One built-in option (from `attributes`, not in the consumer's code): `editor:AddRowButton({...})` with `isshown = function(editor, row) return row.optionKey == "<key>" end`.
+   - Every option: `editor:AddRowButton({...})` without `isshown`.
+4. **Write `onclick`.** It gets `(editor, optionRow, button)`. Read the value with `optionRow.getCurrentValue()`. To write a value, prefer going through the editor (`optionRow.optionTable.set(optionRow.optionTable.widget, nil, value)`, colors: `set(widget, r, g, b, a)`) so the callback, the setter and undo run; then `editor:Refresh()` so the controls show it.
+5. **Give it an `id`, an `icon` and a `tooltip`.** Add `isenabled` only when the user describes when it can be clicked.
+
+"Copy this option to all other frames" usually means: loop `editor:GetAllRegisteredObjects()`, skip `optionRow.registeredObject`, and write the value into each one's profile at the same option key (resolve the key through that registration's `profilekeymap` and `subtablepath`), then call each one's callback or the consumer's refresh. Ask the user which frames count as "all other" when it is not clear.
+
+### Defining a button
+
+```lua
+---@type df_editor_rowbutton
+local copyButton = {
+    id = "copy",                 -- optional; a later button with the same id takes its place
+    side = "left",               -- "left" or "right" (default); anything else counts as "right"
+    icon = [[Interface\Buttons\UI-PlusButton-Up]], -- atlas name, atlas table (DF:CreateAtlas) or texture path / id
+    texcoords = nil,             -- {l, r, t, b}, texture icons only
+    tooltip = "Copy to all units",
+    width = nil, height = nil,   -- default: a square as tall as the dropdowns
+    onclick = function(editor, optionRow, button)
+        -- optionRow.optionKey, .profileTable, .profileKey, .getCurrentValue(), .defaultValue, .registeredObject ...
+    end,
+    isshown = function(editor, optionRow) return optionRow.widgetType == "range" end, -- nil: every row
+    isenabled = function(editor, optionRow) return true end, -- nil: enabled while the row's widget is enabled
+}
+```
+
+### Adding it
+
+- To every value row: `editor:AddRowButton(copyButton)`, removed with `editor:RemoveRowButton("copy")`. Shown from the next menu build; call `editor:Refresh()` to see it at once.
+- To one row: put it in the `buttons` array of that extra option.
+
+Order on each row: the reset button (while `show_reset_buttons` is on), then the editor's buttons in the order they were added, then the option's own. An option button with the id of an earlier one replaces it on that row (e.g. `id = "reset"` swaps the reset button for a custom one there). `isshown` then drops the ones the row should not have; it is asked on every menu build, before the widget exists, so it should read `optionRow` data, not the widget.
+
+### What a button is given
+
+`optionRow` (`df_editor_optionrow`): `optionKey`, `optionTable` (its `.widget` is the built widget), `widgetType`, `profileTable`, `profileKey`, `registeredObject`, `defaultValue` (nil when the option has none), `getCurrentValue()` (reads the profile now, not the build-time value), `buttons`.
+
+`onclick`, `isshown` and `isenabled` run inside `xpcall`; an error counts as false (not shown / disabled).
+
+### Enabled state
+
+Re-read after every menu build, after every value change in the menu, in `RefreshDisabledOptions`, and on each mover / resize tick. A disabled button is drawn at alpha 0.3 with a desaturated icon. A consumer that changes what `isenabled` returns some other way should call `editor:RefreshRowButtonStates()`.
+
+### Layout
+
+The first button of a side sits next to the row, the next one beside it, and so on outward, 2 px apart. Right buttons start 2 px past the row highlight (past a slider's right-side value box); left buttons end 2 px left of the row highlight.
+
+Their room comes out of the widget column, so the rows keep their full width and `options_label_width + options_widget_width + 7 <= options_width` still holds. Each side takes the room of the row with the most buttons on that side, so the columns stay aligned: left buttons push every row right by that much, right buttons fill what the narrower widgets leave. An object whose rows have no buttons gets the full widget width.
+
+---
+
 ## Reset to default buttons
 
-With `show_reset_buttons = true` on `CreateEditor`, each value row (slider, toggle, dropdown, color, text entry) gets a square button at its right showing the `UI-RefreshButton` atlas (TRILINEAR filter). Label, blank and execute rows never get one.
+With `show_reset_buttons = true` on `CreateEditor`, each value row gets the built-in row button with id `"reset"` at its right, showing the `UI-RefreshButton` atlas (TRILINEAR filter).
 
 ### Where the defaults come from
 
@@ -540,15 +621,15 @@ The argument is optional; a registration without it behaves as if no option has 
 
 ### What a click does
 
-`editor:ResetOptionToDefault(resetEntry)` calls the row's own `set()` with the default, so it goes through the same path as a user edit: the profile is written, the 8th-arg callback and the setter run, and an undo entry is pushed (Ctrl+Z brings the old value back). That entry gets a coalesce key of its own (`<id>:<key>:reset`), so it is never merged with an edit of the same option made just before or after: edit 10 → 20, reset → 5, Ctrl+Z gives 20, Ctrl+Z again gives 10.
+`editor:ResetOptionToDefault(optionRow)` calls the row's own `set()` with the default, so it goes through the same path as a user edit: the profile is written, the 8th-arg callback and the setter run, and an undo entry is pushed (Ctrl+Z brings the old value back). That entry gets a coalesce key of its own (`<id>:<key>:reset`), so it is never merged with an edit of the same option made just before or after: edit 10 → 20, reset → 5, Ctrl+Z gives 20, Ctrl+Z again gives 10.
 
 A reset button is enabled only while its option has a default, its widget is enabled, AND the value in the profile is not the default already. "Already the default" tolerates float error: numbers within `0.00001` of the default count as equal (a `1` read back as `0.99999999`), colors are compared channel by channel after `ParseColors` (so a default in any color format matches, a missing alpha counts as 1), and other tables are compared key by key with the same tolerance. The value is read from the profile, not from the row's `get()`, which keeps the value of when the menu was built; the mover refreshes the states on each drag tick, since it moves the offset sliders without their callback.
 
-A reset button is also disabled while its widget is disabled. It follows the widget when `enable_if`, `disableif` or a `children_follow_enabled` toggle disables it: the states are re-read after every menu build, after every value change in the menu, and in `RefreshDisabledOptions`. `ResetOptionToDefault` also refuses a disabled widget, so a direct call cannot write a disabled option either. A consumer that disables menu widgets some other way should call `editor:RefreshResetButtonStates()` afterwards. Colors are passed through `ParseColors`, so any color format works as a default. Then the menu is rebuilt (`Refresh`), because the widgets show the values read at build time; the scroll position is kept.
+A reset button is also disabled while its widget is disabled. It follows the widget when `enable_if`, `disableif` or a `children_follow_enabled` toggle disables it: the states are re-read after every menu build, after every value change in the menu, and in `RefreshDisabledOptions`. `ResetOptionToDefault` also refuses a disabled widget, so a direct call cannot write a disabled option either. A consumer that disables menu widgets some other way should call `editor:RefreshRowButtonStates()` afterwards. Colors are passed through `ParseColors`, so any color format works as a default. Then the menu is rebuilt (`Refresh`), because the widgets show the values read at build time; the scroll position is kept.
 
 ### Layout
 
-The buttons are as tall as the editor's dropdowns (`dropdown_template.height`, or 18) and square. Their room comes out of the widget column: while the buttons are on, every widget is `buttonSize + 2` narrower, so `options_label_width + options_widget_width + 7 <= options_width` still holds and nothing new is clipped. Each button sits 2 px right of the row highlight, vertically centered on its widget (past a slider's right-side value box).
+The same as any row button (see "Row buttons — Layout"): a square as tall as the editor's dropdowns (`dropdown_template.height`, or 18), first on the right side. While every row shows one (the default `show_disabled_reset_buttons = true`), every widget is `buttonSize + 2` narrower.
 
 ### Turning them on or off at runtime
 
@@ -558,6 +639,37 @@ editor:Refresh()
 ```
 
 The row highlights are resized on every build, so the narrower and wider layouts can be swapped freely.
+
+---
+
+## Search
+
+A search box sits above the center panel (`show_search_box`, on by default). While it has text, the center panel shows the options matching it, **from every registered object**, grouped under the name of each object. Emptying the box brings the options of the selected object back.
+
+```lua
+editor:SetSearchText("title size")  -- same as typing it in the box, works with show_search_box = false too
+editor:GetSearchText()              -- "title size"
+editor:IsSearching()                -- true while the panel shows the results
+editor:SetSearchText("")            -- back to the selected object; nil does the same
+```
+
+**What matches.** Every word has to be found, in any order, in the option's label, its `desc`, its `tags` or the name of its object: "title size" finds the size option of the title text, "title" alone finds every option of the title text. A word is plain text, not a pattern. Case does not matter for the letters a to z only: the game's `string.lower` leaves accented letters and other alphabets as they are, so on those clients "ширина" does not find "Ширина". Label and blank rows are not searched and do not appear in the results.
+
+**The box waits** 0.15 seconds after the last key press, each search rebuilds the whole panel. `SetSearchText` does not wait.
+
+**The results are real rows.** Each one edits its own object, whichever object is selected: the profile write, the callback, the setters on all its members, the undo step and its row buttons are that object's. The selection, the mover and the resize grips stay on the selected object, which can still be dragged; if its offset sliders are among the results they follow the drag.
+
+**The keyboard.** A search box keeps the keyboard until it is told otherwise, which would swallow ctrl+z. It lets go after any edit that adds an undo step and when the search is left by a click, so ctrl+z undoes an edit made from the results without clicking anywhere first.
+
+**What leaves the search.** A click on a row of the object list or on a widget in the preview, the user is asking for that object: these go through `editor:SelectObject()`, which forgets the search and calls `EditObject`.
+
+**What keeps the search.** `EditObject` called directly, `Refresh`, undo and redo, closing and opening the editor, and `RegisterObject` / `UnregisterObject`: the results are rebuilt with the new values and the scroll stays. An undo still selects the object it changed.
+
+**Widget ids.** Most objects have an `alpha` or a `width`, so in the results an option's id is `<object id>:<option key>` instead of the key alone, and its `childrenids` are changed the same way. `optionsFrame:GetWidgetById("anchoroffsetx")` finds nothing during a search; `editor:GetEditingOptionWidget("anchoroffsetx")` works in both cases for the selected object, and returns nil when the panel is not showing that option.
+
+**Disabled options.** `disableif` and `enable_if` work as usual. An option turned off by a `children_follow_enabled` toggle stays off in the results even when the toggle itself did not match.
+
+**Limit.** `use_colon` comes from the selected object, for every row of the results.
 
 ---
 
@@ -680,6 +792,8 @@ Both paths go through the same `EditObject`. Mutually compatible. `EditObject` w
 **Alt + click reaches widgets that are behind.** A plain click always selects the top widget at that spot. Holding Alt while clicking (on a `selectButton` or on the mover of the selected widget) calls `SelectObjectBehind`: it gathers every shown `selectButton` under the mouse cursor whose widget is also shown, sorts them top to bottom by the widget's own stacking (frame strata, frame level, then draw layer and sublevel for textures and fontstrings, which take strata and level from their parent frame, then registration order), and selects the one right below the selected widget. Each further alt + click goes one step deeper and wraps back to the top after the last one. When the selected widget is not under the cursor, it steps from the clicked widget instead. An alt + click on the mover never starts a drag.
 
 **The list follows the selection.** Every `EditObject` ends with `objectSelector:ScrollToEditingObject()`, which scrolls the left-panel list (only when needed) so the row of the widget being edited is in view. This matters most after an alt + click, where the selected widget can be hidden behind others.
+
+**A click in the preview shows the widget's name.** After a click (plain or alt) on a widget in the preview, `ShowSelectedNameTag` puts a small box right above the widget with its registration `label`: black background at 0.834 alpha, orange text at font size 9, sized to fit the text. It lives on the over-the-top frame and is anchored to the widget, so it follows drags. `EditObject` hides it when the selection moves to another widget, so selecting from the left list does not show it; a refresh or undo/redo of the same widget keeps it. Closing the editor hides it.
 
 The frame-level math used to be `editor:GetFrameLevel() + #registeredObjects` — that mixed levels from two parent trees (the editor and the widget's parent) and only worked by coincidence. Now it's `widgetLevel + 1` (or `widgetParentLevel + 1` for Region children that lack their own frame level).
 
@@ -814,6 +928,10 @@ This is intentional — the consumer knows best what's editable on a custom widg
 
 This is the source of the "Undo button feels wonky" bug class. Each menu rebuild (every `EditObject` call) triggers each widget's set callback once during initialization with the widget's current value. Without the `snapshotsEqual` skip, this would push a no-op undo entry per widget on every edit, wiping the redo stack repeatedly. The current code handles this in the framework. If you build your own undo system on top of the editor, ensure you replicate the no-op skip.
 
+The one case that used to change data: a slider without decimals holding a stored decimal. The menu refresh at the end of a build moves that slider to the stored 7.5 and it reports 7, which was written over the 7.5 with an undo step of its own, just by showing the option. `set()` now ignores it.
+
+Sliders left unused by a rebuild keep their old hooks. `ClearOptionsPanel` drops their `_get` so that same refresh skips them; before that it moved them back to the value of when their menu was built, and their old hook wrote that value over any edit made since.
+
 ### `UnregisterObject` while editing
 
 The active object can be unregistered. The editor will tear down its editing state via `ClearEditing` to avoid dangling references. But: any open undo entries that reference the unregistered object are NOT removed from the stacks. They'll still replay — mutating the (now-orphaned) profile data. The object switch on Undo will silently no-op because `GetObjectById` returns nil. This is intentional (the data restore is still useful even if the UI can't switch to it) but worth knowing.
@@ -873,7 +991,12 @@ editor:SetPoint("TOPLEFT", tabBodyFrame, "TOPLEFT", 10, TAB_TOP_OFFSET)
 | `EditObject(registeredObjectInfo)` | Switch to editing this object. Refreshes the left selector. |
 | `EditObjectById(id)` | Same, by string id. |
 | `EditObjectByIndex(i)` | Same, by 1-based registration order. |
+| `SelectObject(registeredObjectInfo, activeMember)` | What a click on a widget or on its row in the object list does: leaves the search and calls `EditObject`. |
 | `Refresh()` | Re-edit the currently-edited object (use after profile imports). |
+| `SetSearchText(text)` / `GetSearchText()` / `IsSearching()` | Show the options matching the words on the center panel. See "Search". |
+| `GetEditingOptionWidget(optionKey)` | The widget of an option of the selected object, on its menu or among the search results; nil when the panel is not showing it. |
+| `BuildObjectOptions(registeredObjectInfo, object, searchWords)` | Build the menu rows of one object, without showing them. Used by `PrepareObjectForEditing` and by the search. |
+| `ShowOptionsMenu(menuOptions, optionRows, bUseColon)` | Build the center panel from rows given by `BuildObjectOptions`. |
 | `ClearEditing()` | Tear down active edit + UI state. |
 | `GetEditingObject()` | Returns the active uiobject or nil. |
 | `GetEditingObjectIndex()` | Returns the 1-based registration index of the active object. |
@@ -891,12 +1014,16 @@ editor:SetPoint("TOPLEFT", tabBodyFrame, "TOPLEFT", 10, TAB_TOP_OFFSET)
 | `AddToUndoHistory(state)` | Push a custom undo state (with coalescing). |
 | `AddMoverUndoState(registered, anchorTable, oldX, oldY, newX, newY)` | Push a mover-style undo state (used by the mover's OnMouseUp internally; expose if you build custom drag logic). |
 | `RefreshUndoButtons()` | Re-evaluate toolbar button enable/disable. |
-| `ResetOptionToDefault(resetEntry)` | Put one option back to its default through its `set()` (undoable), then rebuild the menu. Called by the reset buttons. |
-| `RefreshResetButtonStates()` | Re-read which reset buttons are enabled (option has a default and its widget is enabled). Called automatically after builds, value changes and `RefreshDisabledOptions`. |
-| `LayoutResetButtons(resetEntries, widgetWidth)` | Place / hide the reset buttons after a menu build (called automatically). |
-| `GetResetButtonSize()` | Width and height of the reset buttons: the dropdown template height, or 18. |
+| `AddRowButton(rowButton)` | Add a button to every value row (replaces the one with the same id). See "Row buttons". |
+| `RemoveRowButton(id)` | Remove a button added with `AddRowButton`. |
+| `ResetOptionToDefault(optionRow)` | Put one option back to its default through its `set()` (undoable), then rebuild the menu. Called by the reset buttons. |
+| `RefreshRowButtonStates()` | Re-read which row buttons are enabled (`isenabled`, or the widget's state). Called automatically after builds, value changes and `RefreshDisabledOptions`. |
+| `LayoutRowButtons(optionRows, widgetWidth)` | Place / hide the row buttons after a menu build (called automatically). |
+| `GetRowButtonSize()` | Width and height of a row button without a size of its own: the dropdown template height, or 18. |
+| `GetRowButtonsSpace(rowButtons, side)` | Room the buttons of one side take, gaps included. |
 | `StartObjectMovement(anchorSettings)` / `StopObjectMovement()` | Mover lifecycle (called automatically). |
 | `ShowSelectedTextures(object)` / `HideSelectedTextures()` | Four corner highlights. |
+| `ShowSelectedNameTag(object, name)` / `HideSelectedNameTag()` | Name box above a widget clicked in the preview. |
 | `SetSelectedBackgroundColor(r, g, b, a)` | Recolor the translucent fill drawn under the currently-edited widget (`ObjectBackgroundTexture`). Defaults to magenta `(1, 0, 1, 0.25)`. Pass values in `[0, 1]`. Effect is immediate — no `Refresh` needed. Useful when magenta clashes with the consumer's preview palette. |
 | `GetCanvasScrollBox()` / `GetObjectSelector()` / `GetOptionsFrame()` / `GetOverTheTopFrame()` / `GetMoverObject()` | Internal frame accessors — useful if you need to overlay custom UI. |
 
@@ -1004,6 +1131,8 @@ When generating code that uses this editor, check the following:
 11. **`option.setter` is nil-guarded; the 8th-arg callback fires before the setter.** Order on every edit is: profile-mutation → 8th-arg callback (1278) → `option.setter` (1293 for anchor keys, 1302 otherwise) → mover refresh (anchor branch only). Both `option.setter` call sites are wrapped `if (option.setter) then ... end`, so `extraOptions` entries may omit `setter` and rely on the callback for visual updates — *except* for the `"anchor"` key, where the editor zeros `.x`/`.y` between callback and setter (see Pitfalls → "Anchor edits and the setter"). Mental model: setter = "apply this value to this widget" (per-attribute, fine-grained, `(widget, value)`); callback = "something changed, react globally" (per-registration, coarse, `(object, key, value, profileTable, profileKey)`). For anchor keys the setter receives the parent anchor table, not the scalar — so `SetAnchor` can read `.side/.x/.y` together. Built-in setters for `Texture`/`FontString`/`Frame`/`Button`/`StatusBar` ship inside `editor.lua` and you do not supply or omit those; the nil-guard only matters for consumer-supplied `extraOptions`.
 
 12. **Don't put expensive work in the callback — it fires on construction too.** `BuildMenuVolatile` fires each widget's `set()` once at construction time with the current value, which routes through `applyValue` → callback. So on every `EditObject` call, your callback fires N times (one per widget) with no-op values. The `snapshotsEqual` guard prevents undo-stack pollution, but it does NOT prevent the callback from running. Idempotency and cheapness both required.
+
+13. **"Row button" means the Row buttons feature.** A request like "add a row button to the option X that does Y" is answered with `editor:AddRowButton` or an option's `buttons` list; see "Row buttons — Turning a request into code". Don't build a separate button by hand next to the widget.
 
 ---
 

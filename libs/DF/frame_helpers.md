@@ -174,6 +174,7 @@ Used with `CreateSnapGroup` (and `SetOptionsTable`). Any field not provided fall
 | `space_between_horizontal` | `number` | `0` | UIParent units left empty between two frames snapped side by side. |
 | `space_between_vertical` | `number` | `0` | UIParent units left empty between two frames snapped on top of each other. |
 | `restore_size_on_unsnap` | `boolean` | `true` | Unsnapping gives a frame back the size it had before its first snap. |
+| `match_sizes` | `boolean` | `true` | Linking or re-chaining a cluster resizes each frame to the outer size of the frame it is anchored to. `false` leaves every frame at its own size; the frames are only re-anchored, centered on the shared side. Resizing a frame by hand still gives its row or column the same size. |
 | `clamp_cluster` | `boolean` | `true` | While a frame clamped to the screen is dragged, its clamp rect covers its whole cluster (outer rects included); the frame's own clamp insets are given back on drop. |
 | `on_links_changed` | `function(snapGroup)` | `nil` | Called after links are created or removed (drop, `Link`, `Unlink`, `Unsnap`, `SetProfileTable`). Held during batches. |
 | `on_drag_cancelled` | `function(snapGroup, frame)` | `nil` | Called when a drag ends without `StopDrag` (the dragged frame was hidden or unregistered). |
@@ -277,3 +278,26 @@ Each link is stored in both directions (once on each frame). Current frame sizes
 
 - **Corner snapping** — Add diagonal pairings (e.g. `topleft ↔ topleft`) to `SNAP_OPPOSITE` and `SNAP_AXIS`, plus a matching branch in the edge evaluator.
 - **Grid snapping** — Add an optional virtual grid target to the candidate finder; a grid hit can reuse the anchor offset helper.
+
+
+---
+
+# Placement System
+
+Saves where a movable frame sits as the nearest of its nine anchor points plus offsets, so it keeps its place when the resolution or aspect ratio changes.
+
+| Call | What it does |
+|------|--------------|
+| `detailsFramework:BindPlacement(frame, storageTable[, keyNames])` | Table that holds `point`, `x`, `y`, `scale`. `keyNames.prefix` prefixes every key, `keyNames.<value>` renames one, `keyNames.<value> = false` turns one off. |
+| `detailsFramework:CapturePlacement(frame)` | Stores where the frame is and re-anchors it. The frame must be shown. |
+| `detailsFramework:ApplyPlacement(frame)` | Anchors the frame from the table. Empty table: centre. Offsets without a point: top left over bottom left, captured on the next frame. |
+| `detailsFramework:StorePlacement(frame, point, x, y)` | Writes a place to the table without measuring or moving the frame. |
+| `detailsFramework:ChangePlacementScale(frame, scale)` | Stores and applies a scale. |
+| `detailsFramework:MakePlacementDraggable(frame)` | Left button drag, captured on drop. |
+| `detailsFramework:EnablePlacementWheelScale(frame)` | Mouse wheel scales, 0.1 to 3. |
+| `detailsFramework:EnablePlacementAltUnlock(frame)` | Mouse only works while alt is held. |
+| `detailsFramework:EmbedPlacement(frame)` | Same calls as `frame:Method(...)`. |
+
+Offsets are in parent pixels and divided by the frame's scale when applied, even with `scale = false`.
+
+Offsets are measured against the parent: use it on frames parented to the screen or a frame covering it.
