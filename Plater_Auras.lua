@@ -3215,7 +3215,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 		-- update
 		local auraActorType = unitFrame.ActorType == "friendlyplayer" and "friendlynpc" or unitFrame.ActorType -- shared friendly filters
 		--aura types disabled in the options tab of the actor type take the disable path
-		local plateConfig = unitFrame.ActorType ~= "player" and Plater.db.profile.plate_config[unitFrame.ActorType]
+		local plateConfig = unitFrame.ActorType and unitFrame.ActorType ~= "player" and Plater.db.profile.plate_config[unitFrame.ActorType]
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			local isContainerShown = true
