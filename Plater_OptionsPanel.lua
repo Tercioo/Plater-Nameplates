@@ -5,6 +5,8 @@ local Plater = Plater
 local DF = DetailsFramework
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-3.0")
+--optional, not embedded
+local LibOrbitGlow = LibStub:GetLibrary ("LibOrbitGlow-1.0", true)
 local _
 local IsBetaBuild = IsBetaBuild or function() return false end
 
@@ -3022,18 +3024,19 @@ local debuff_options = {
 
 			--the icon glows of LibOrbitGlow, including the ones of installed glow packs. plater builds them from the registry, which
 			--works for a flipbook atlas or a glow with only a loop phase, glows of an engine are built by code of the library
-			local LibOrbitGlow = LibStub:GetLibrary("LibOrbitGlow-1.0")
-			for _, glowName in ipairs(LibOrbitGlow:GetGlowList()) do
-				local glowInfo = LibOrbitGlow:GetGlowInfo(glowName)
-				if (glowInfo.atlas or glowInfo.loopOnly) then
-					glowTypes[#glowTypes + 1] = {label = glowName, value = glowName, onclick = onSelectGlowType}
+			if (LibOrbitGlow) then
+				for _, glowName in ipairs(LibOrbitGlow:GetGlowList()) do
+					local glowInfo = LibOrbitGlow:GetGlowInfo(glowName)
+					if (glowInfo.atlas or glowInfo.loopOnly) then
+						glowTypes[#glowTypes + 1] = {label = glowName, value = glowName, onclick = onSelectGlowType}
+					end
 				end
 			end
 
 			return glowTypes
 		end,
 		name = "Pandemic glow type",
-		desc = "How the pandemic glow looks. Pulse only applies to Glow.\n\nInstall the addon Orbit: Media for additional glows.",
+		desc = "How the pandemic glow looks. Pulse only applies to Glow.\n\nInstall the addons LibOrbitGlow-1.0 and Orbit: Media for additional glows.",
 		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 	{
@@ -3228,9 +3231,10 @@ local debuff_options = {
 			}
 
 			--the status bar glows of LibOrbitGlow, including the ones of installed glow packs
-			local LibOrbitGlow = LibStub:GetLibrary("LibOrbitGlow-1.0")
-			for _, glowName in ipairs(LibOrbitGlow:GetStatusBarGlowList()) do
-				glowTypes[#glowTypes + 1] = {label = LibOrbitGlow:GetStatusBarGlowInfo(glowName).label, value = glowName, onclick = onSelectGlowType}
+			if (LibOrbitGlow) then
+				for _, glowName in ipairs(LibOrbitGlow:GetStatusBarGlowList()) do
+					glowTypes[#glowTypes + 1] = {label = LibOrbitGlow:GetStatusBarGlowInfo(glowName).label, value = glowName, onclick = onSelectGlowType}
+				end
 			end
 
 			return glowTypes

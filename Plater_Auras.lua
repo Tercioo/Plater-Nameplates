@@ -18,7 +18,7 @@ local min = _G.min
 local max = _G.max
 local abs = _G.abs
 local G_CreateFrame = _G.CreateFrame
-local LibOrbitGlow = LibStub:GetLibrary("LibOrbitGlow-1.0")
+local LibOrbitGlow = LibStub:GetLibrary("LibOrbitGlow-1.0", true) --optional, not embedded
 
 
 local CreateFrame = function (frameType , name, parent, template, id)
@@ -1789,7 +1789,7 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 	--a glow is a flipbook atlas (one layer) or glow pack textures for the loop phase, a tinted body and a near white core when layered
 	local orbitGlowName = profile.aura_pandemic_glow_type
 	--a glow pack that is no longer installed leaves a name without info
-	local orbitGlowInfo = isEnabled and isOrbitGlow and LibOrbitGlow:GetGlowInfo(orbitGlowName)
+	local orbitGlowInfo = isEnabled and isOrbitGlow and LibOrbitGlow and LibOrbitGlow:GetGlowInfo(orbitGlowName)
 	local pandemicLayers = auraButton.PandemicLayers
 
 	if (orbitGlowInfo and not pandemicLayers) then
@@ -2607,7 +2607,7 @@ end
 local updateDispelGlowOutlines = function(container)
 	local profile = Plater.db.profile
 	local glowType = profile.aura_dispel_glow_type
-	local isOutline = LibOrbitGlow:IsStatusBarGlowRegistered(glowType)
+	local isOutline = LibOrbitGlow and LibOrbitGlow:IsStatusBarGlowRegistered(glowType) or false
 	local outlineFrame = container.OutlineFrame
 	--the outline frame has the scale of the health bar, so the library gets the size in its units
 	local barWidth, barHeight = container.PixelGlowFrame.healthBar:GetSize()
@@ -2620,7 +2620,7 @@ local updateDispelGlowOutlines = function(container)
 			local color = isEnrageColor and profile.aura_border_colors.enrage or profile.aura_dispel_glow_color
 			--returns nil and keeps the glow as it is while the health bar has no size yet
 			LibOrbitGlow.StatusBar:Show(outlineFrame, {glow = glowType, key = glowSlot.slotKey, color = color, width = barWidth, height = barHeight})
-		else
+		elseif (LibOrbitGlow) then
 			LibOrbitGlow.StatusBar:Hide(outlineFrame, glowSlot.slotKey)
 		end
 	end
@@ -2826,10 +2826,13 @@ local addDispelGlowSlot = function(container, slotKey, candidateFilters, isEnrag
 
 			--the LibOrbitGlow status bar glow of this slot, shown by the mask like the lines. the library creates its textures on the
 			--first Show and the mask can only be added in here. its default glow has both layers, so both exist from now on
-			local outline = LibOrbitGlow.StatusBar:Show(container.OutlineFrame, {key = slotKey, width = 1, height = 1})
-			outline.body:AddMaskTexture(pixelGlowMask)
-			outline.core:AddMaskTexture(pixelGlowMask)
-			LibOrbitGlow.StatusBar:Hide(container.OutlineFrame, slotKey)
+			if (LibOrbitGlow) then
+				local outline = LibOrbitGlow.StatusBar:Show(container.OutlineFrame, {key = slotKey, width = 1, height = 1})
+				outline.body:AddMaskTexture(pixelGlowMask)
+				outline.core:AddMaskTexture(pixelGlowMask)
+				LibOrbitGlow.StatusBar:Hide(container.OutlineFrame, slotKey)
+			end
+
 
 			container.GlowSlots[index] = {
 				slotFrame = slotFrame,

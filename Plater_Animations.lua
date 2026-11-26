@@ -3,7 +3,7 @@ local Plater = _G.Plater
 local DF = _G.DetailsFramework
 local AnimateTexCoords = _G.AnimateTexCoords or TextureUtil and TextureUtil.AnimateTexCoords or function() end
 local LCG = LibStub:GetLibrary("LibCustomGlow-1.0") -- https://github.com/Stanzilla/LibCustomGlow
-local LibOrbitGlow = LibStub:GetLibrary("LibOrbitGlow-1.0") -- https://github.com/MoONSHO7/LibOrbitGlow
+local LibOrbitGlow = LibStub:GetLibrary("LibOrbitGlow-1.0", true) -- optional, standalone addon https://github.com/MoONSHO7/Orbit-Libs
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
@@ -299,7 +299,7 @@ end
 			LCG.AutoCastGlow_Start(frame.__PlaterGlowFrame, options.color, options.N, options.frequency, options.scale, options.xOffset, options.yOffset, options.key or "", options.framelevel)
 		elseif options.glowType == "proc" then
 			LCG.ProcGlow_Start(frame.__PlaterGlowFrame, options)
-		elseif LibOrbitGlow:IsGlowRegistered(options.glowType) then
+		elseif LibOrbitGlow and LibOrbitGlow:IsGlowRegistered(options.glowType) then
 			local glowFrame = frame.__PlaterGlowFrame
 			local glowKey = options.key or ""
 			options.key = glowKey
@@ -407,7 +407,7 @@ end
 				LCG.AutoCastGlow_Stop(frame.__PlaterGlowFrame, key or "")
 			elseif glowType == "proc" then
 				LCG.ProcGlow_Stop(frame.__PlaterGlowFrame, key or "")
-			elseif LibOrbitGlow:IsGlowRegistered(glowType) then
+			elseif LibOrbitGlow and LibOrbitGlow:IsGlowRegistered(glowType) then
 				LibOrbitGlow.Remove(frame.__PlaterGlowFrame, glowType, key or "")
 				if frame.__PlaterGlowFrame.orbitGlows then
 					frame.__PlaterGlowFrame.orbitGlows[key or ""] = nil
