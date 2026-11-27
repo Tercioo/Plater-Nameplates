@@ -612,6 +612,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         end
 
         layoutEditor:Refresh()
+        designer.UpdatePreviewActorType()
     end
 
     ---@type dropdownoption[]
@@ -1291,10 +1292,33 @@ function designer.CreatePreview(parent)
 end
 
 
+function designer.UpdatePreviewActorType()
+    local unitFrame = plateFrame.unitFrame
+    local plateConfigs = getProfileTable()
+    local actorType = subTablePath
+    local isEnemy = actorType == ACTORTYPE_ENEMY_NPC or actorType == ACTORTYPE_ENEMY_PLAYER
+    local isPlayer = actorType == ACTORTYPE_ENEMY_PLAYER or actorType == ACTORTYPE_FRIENDLY_PLAYER
+
+    plateFrame.actorType = actorType
+    unitFrame.actorType = actorType
+    plateFrame.OnTickFrame.actorType = actorType
+    plateFrame.isPlayer = isPlayer
+    unitFrame.isPlayer = isPlayer
+    unitFrame.IsNeutralOrHostile = isEnemy
+    plateFrame.PlayerCannotAttack = not isEnemy
+    plateFrame.NameAnchor = plateConfigs.actorname_text_anchor.side
+    plateFrame.PlateConfig = plateConfigs
+    Plater.UpdatePlateFrame(plateFrame, actorType, nil, true)
+    unitFrame:SetFrameStrata("FULLSCREEN")
+
+    if (isEnemy) then
+        unitFrame.Settings.ShowCastBar = not Plater.db.profile.hide_enemy_castbars
+    else
+        unitFrame.Settings.ShowCastBar = not Plater.db.profile.hide_friendly_castbars
+    end
+end
+
 function designer.UpdatePreview()
-    local DB_NAME_NPCENEMY_ANCHOR = platerInternal.VarSharing.DB_NAME_NPCENEMY_ANCHOR
-    local DB_PLATE_CONFIG = platerInternal.VarSharing.DB_PLATE_CONFIG
-    local DB_CASTBAR_HIDE_ENEMIES = platerInternal.VarSharing.DB_CASTBAR_HIDE_ENEMIES
 
     local unitFrame = plateFrame.unitFrame
     local plateConfigs = getProfileTable()
@@ -1309,7 +1333,6 @@ function designer.UpdatePreview()
     unitFrame.displayedUnit = unitID
     plateFrame.unit = unitID
     plateFrame.OnTickFrame.unit = unitID
-    plateFrame.OnTickFrame.actorType = ACTORTYPE_ENEMY_NPC
     unitFrame.PlaterOnScreen = true
 
     local unitName = unitFrame.unitName
@@ -1554,14 +1577,10 @@ function designer.UpdatePreview()
 
     local PLAYER_IN_COMBAT = false
 
-    local actorType = ACTORTYPE_ENEMY_NPC
-
     Plater.UpdateSoftInteractTarget(plateFrame)
 
     plateFrame[MEMBER_GUID] = UnitGUID(unitID)
     plateFrame[MEMBER_NAME] = UnitName(unitID)
-
-    unitFrame.IsNeutralOrHostile = actorType == ACTORTYPE_ENEMY_NPC
 
     unitFrame.nameplateScaleAdjust = 1
 
@@ -1593,12 +1612,7 @@ function designer.UpdatePreview()
     local yes = true
 
     unitFrame.Settings.ShowCastBar = yes
-    plateFrame.isPlayer = no
-    unitFrame.isPlayer = no
-    plateFrame.PlayerCannotAttack = no
     unitFrame.InExecuteRange = no
-    plateFrame.actorType = actorType
-    unitFrame.actorType = actorType
 
     unitFrame:SetUnit(unitID)
 
@@ -1608,10 +1622,7 @@ function designer.UpdatePreview()
     Plater.AddToAuraUpdate(unitID, unitFrame)
     Plater.EnsureUpdateBossModAuras(plateFrame[MEMBER_GUID])
 
-    plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
-    plateFrame.PlateConfig = DB_PLATE_CONFIG.enemynpc
-    Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
-    unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
+    designer.UpdatePreviewActorType()
     unitFrame.castBar:SetUnit (unitID, unitID)
 
     --get threat situation to expose it to scripts already in the nameplate added hook
@@ -1629,7 +1640,7 @@ function designer.UpdatePreview()
 
     Plater.UpdateUIParentLevels(unitFrame)
 
-    Plater.UpdatePlateFrame(plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
+    Plater.UpdatePlateFrame(plateFrame, plateFrame.actorType, nil, true)
 
     Plater.OnUpdateHealth(healthBar)
     Plater.QuickHealthUpdate(unitFrame)
